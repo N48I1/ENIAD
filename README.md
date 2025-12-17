@@ -59,27 +59,14 @@ cd ../backend && npm install
 
 ### 2. Start Local Blockchain
 
-```bash
-# Terminal 1
-cd contracts
-npx hardhat node
-```
+
 
 ### 3. Deploy Smart Contract
 
-```bash
-# Terminal 2
-cd contracts
-npx hardhat run scripts/deploy.js --network localhost
-```
+
 
 ### 4. Start Web Server
 
-```bash
-# Terminal 3
-cd backend
-npm start
-```
 
 ### 5. Access Application
 
