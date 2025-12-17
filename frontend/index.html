@@ -213,17 +213,26 @@
                             <form id="issueForm">
                                 <div class="form-grid">
                                     <div class="form-group">
-                                        <label for="studentName">Student Name</label>
+                                        <label for="studentName">Full Name</label>
                                         <input type="text" id="studentName" placeholder="e.g. John Doe" required>
                                     </div>
                                     <div class="form-group">
-                                        <label for="studentId">Student ID</label>
-                                        <input type="text" id="studentId" placeholder="e.g. 2024-ENIAD-001" required>
+                                        <label for="studentCni">Student ID (CNI)</label>
+                                        <input type="text" id="studentCni" placeholder="e.g. AB123456" required>
                                     </div>
                                     <div class="form-group">
-                                        <label for="diplomaTitle">Diploma Title</label>
-                                        <input type="text" id="diplomaTitle"
-                                            placeholder="e.g. Master of Computer Science" required>
+                                        <label for="studentApogee">APOGEE Code</label>
+                                        <input type="text" id="studentApogee" placeholder="e.g. 20230001" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="majorSelect">Major</label>
+                                        <select id="majorSelect" required>
+                                            <option value="" disabled selected>Select Major</option>
+                                            <option value="IRSI">IRSI</option>
+                                            <option value="ROC">ROC</option>
+                                            <option value="AI">AI</option>
+                                            <option value="GI">GI</option>
+                                        </select>
                                     </div>
                                     <div class="form-group">
                                         <label for="gradYear">Graduation Year</label>
@@ -238,15 +247,46 @@
                                 </div>
                             </form>
 
+                            <!-- Live Notification -->
                             <div id="issueResult" class="notification info hidden">
                                 <ion-icon name="information-circle"></ion-icon>
                                 <span id="issueMsg">Transaction sent...</span>
                             </div>
-                        </div>
-                    </div>
-                </section>
 
-            </div>
+                            <!-- Diploma Preview (Hidden by default, shown after issuance) -->
+                            <div id="diplomaPreview" class="diploma-preview hidden">
+                                <div class="diploma-border">
+                                    <div class="diploma-header">
+                                        <ion-icon name="ribbon-outline" class="diploma-icon"></ion-icon>
+                                        <h2>ENIAD</h2>
+                                        <span>Digital Certificate of Completion</span>
+                                    </div>
+                                    <div class="diploma-body">
+                                        <p>This certifies that</p>
+                                        <h3 id="previewName">Student Name</h3>
+                                        <p>has successfully completed the requirements for the major in</p>
+                                        <h4 id="previewMajor">Major Name</h4>
+                                        <div class="diploma-meta">
+                                            <span><strong>Year:</strong> <span id="previewYear">2025</span></span>
+                                            <span><strong>ID:</strong> <span id="previewIds">CNI / APOGEE</span></span>
+                                        </div>
+                                    </div>
+                                    <div class="diploma-footer">
+                                        <div class="hash-box">
+                                            <small>Certificate Hash:</small>
+                                            <div class="copy-row">
+                                                <code id="previewHash">0x...</code>
+                                                <button class="btn-icon" onclick="copyHash()" title="Copy Hash">
+                                                    <ion-icon name="copy-outline"></ion-icon>
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+
+                        </div>
         </main>
     </div>
 

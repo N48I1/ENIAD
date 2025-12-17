@@ -473,20 +473,32 @@ async function issueCertificate(e) {
         return;
     }
 
+    // Get input values
     const name = document.getElementById('studentName').value.trim();
-    const sId = document.getElementById('studentId').value.trim();
-    const diploma = document.getElementById('diplomaTitle').value.trim();
+    const cni = document.getElementById('studentCni').value.trim();
+    const apogee = document.getElementById('studentApogee').value.trim();
+    const major = document.getElementById('majorSelect').value;
     const year = parseInt(document.getElementById('gradYear').value);
 
     // Validation
-    if (!name || !sId || !diploma || !year) {
+    if (!name || !cni || !apogee || !major || !year) {
         showToast('Please fill in all fields', 'warning');
         return;
     }
 
+    // Combine IDs for storage (Platform constraint)
+    // Format: "CNI: [CNI] | APOGEE: [APOGEE]"
+    const combinedId = `CNI: ${cni} | APOGEE: ${apogee}`;
+    const diplomaTitle = `Engineering Degree in ${major}`;
+
     const btn = document.getElementById('issueBtn');
     const resultBox = document.getElementById('issueResult');
     const msg = document.getElementById('issueMsg');
+    const preview = document.getElementById('diplomaPreview');
+
+    // Hide previous results
+    resultBox.classList.add('hidden');
+    preview.classList.add('hidden');
 
     setButtonLoading(btn, true);
     resultBox.classList.remove('hidden');
@@ -495,10 +507,10 @@ async function issueCertificate(e) {
 
     try {
         // Estimate gas
-        const gasEstimate = await contract.estimateGas.issueCertificate(name, sId, diploma, year);
+        const gasEstimate = await contract.estimateGas.issueCertificate(name, combinedId, diplomaTitle, year);
         showToast(`Estimated gas: ${gasEstimate.toString()}`, 'info');
 
-        const tx = await contract.issueCertificate(name, sId, diploma, year);
+        const tx = await contract.issueCertificate(name, combinedId, diplomaTitle, year);
         msg.textContent = 'Transaction sent! Waiting for confirmation...';
 
         const receipt = await tx.wait();
@@ -506,14 +518,20 @@ async function issueCertificate(e) {
         // Find Hash from event
         const event = receipt.events?.find(e => e.event === 'CertificateIssued');
         const hash = event?.args?.certificateHash;
-        const certId = event?.args?.certificateId?.toNumber();
 
+        // Show Success Message
         resultBox.className = 'notification success';
-        msg.innerHTML = `
-            <strong>✅ Certificate Issued Successfully!</strong><br>
-            <small>ID: ${certId}</small><br>
-            <small style="word-break: break-all;">Hash: ${hash}</small>
-        `;
+        msg.innerHTML = `<strong>✅ Certificate Issued Successfully!</strong>`;
+
+        // Update and Show Diploma Preview
+        document.getElementById('previewName').textContent = name;
+        document.getElementById('previewMajor').textContent = major; // Display just the major name e.g. "IRSI"
+        document.getElementById('previewYear').textContent = year;
+        document.getElementById('previewIds').textContent = `${cni} / ${apogee}`;
+        document.getElementById('previewHash').textContent = hash;
+
+        preview.classList.remove('hidden');
+        preview.scrollIntoView({ behavior: 'smooth' });
 
         document.getElementById('issueForm').reset();
         showToast('Certificate issued successfully!', 'success');
@@ -529,6 +547,15 @@ async function issueCertificate(e) {
             Issue Certificate
         `);
     }
+}
+
+function copyHash() {
+    const hashText = document.getElementById('previewHash').textContent;
+    navigator.clipboard.writeText(hashText).then(() => {
+        showToast('Hash copied to clipboard!', 'success');
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+    });
 }
 
 // =============================================================================
