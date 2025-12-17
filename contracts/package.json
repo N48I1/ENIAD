@@ -1,0 +1,13 @@
+{
+    "name": "blockchain-mini-projet-contracts",
+    "version": "1.0.0",
+    "description": "Smart contracts for the Mini Projet",
+    "scripts": {
+        "test": "hardhat test",
+        "deploy": "hardhat run scripts/deploy.js"
+    },
+    "devDependencies": {
+        "hardhat": "^2.19.0",
+        "@nomicfoundation/hardhat-toolbox": "^4.0.0"
+    }
+}

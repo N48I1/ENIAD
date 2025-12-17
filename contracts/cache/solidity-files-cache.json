@@ -1,0 +1,77 @@
+{
+  "_format": "hh-sol-cache-2",
+  "files": {
+    "/home/n48i1/Documents/S9-ENIAD/Blockchain/Mini-Projet/contracts/contracts/ENIADDigitalCertificate.sol": {
+      "lastModificationDate": 1765821301007,
+      "contentHash": "4eac27643922c06588cbbe4801a8991a",
+      "sourceName": "contracts/ENIADDigitalCertificate.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "ENIADDigitalCertificate"
+      ]
+    },
+    "/home/n48i1/Documents/S9-ENIAD/Blockchain/Mini-Projet/contracts/contracts/EniadDiplomas.sol": {
+      "lastModificationDate": 1765808175252,
+      "contentHash": "14187724437799c3ee395b1d975422d9",
+      "sourceName": "contracts/EniadDiplomas.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "evmVersion": "paris",
+          "optimizer": {
+            "enabled": false,
+            "runs": 200
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.20"
+      ],
+      "artifacts": [
+        "EniadDiplomas"
+      ]
+    }
+  }
+}

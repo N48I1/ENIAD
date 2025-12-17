@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ENIAD Digital Certificates</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Ethers.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <!-- Styles -->
+    <link rel="stylesheet" href="style.css">
+    <!-- Ionicons -->
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+</head>
+
+<body>
+    <div class="app-wrapper">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="logo-area">
+                <ion-icon name="ribbon-outline" class="logo-icon"></ion-icon>
+                <div class="logo-text">
+                    <h1>ENIAD</h1>
+                    <span>Digital Certificates</span>
+                </div>
+            </div>
+
+            <nav class="nav-menu">
+                <button class="nav-btn active" data-tab="home">
+                    <ion-icon name="home-outline"></ion-icon>
+                    <span>Home</span>
+                </button>
+                <button class="nav-btn" data-tab="verify">
+                    <ion-icon name="shield-checkmark-outline"></ion-icon>
+                    <span>Verify Diploma</span>
+                </button>
+                <button class="nav-btn" data-tab="admin">
+                    <ion-icon name="construct-outline"></ion-icon>
+                    <span>Admin Dashboard</span>
+                </button>
+            </nav>
+
+            <div class="connect-area">
+                <button id="connectWalletBtn" class="btn btn-connect">
+                    <ion-icon name="wallet-outline"></ion-icon>
+                    <span>Connect Wallet</span>
+                </button>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-bar">
+                <h2 id="pageTitle">Welcome</h2>
+                <div class="user-status">
+                    <span id="networkStatus" class="badge">Not Connected</span>
+                </div>
+            </header>
+
+            <!-- Views -->
+            <div class="content-area">
+
+                <!-- Home View -->
+                <section id="homeView" class="view active">
+                    <div class="hero-card">
+                        <div class="hero-text">
+                            <h3>Secure. Immutable. Verifiable.</h3>
+                            <p>ENIAD's official blockchain-based certification system ensuring the authenticity of
+                                academic diplomas.</p>
+                            <div class="hero-actions">
+                                <button class="btn btn-primary" onclick="switchTab('verify')">Verify a
+                                    Certificate</button>
+                                <button class="btn btn-outline" onclick="switchTab('admin')">Issuer Login</button>
+                            </div>
+                        </div>
+                        <div class="hero-visual">
+                            <ion-icon name="school-outline"></ion-icon>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Verify View -->
+                <section id="verifyView" class="view">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Diploma Verification</h3>
+                            <p>Enter the Certificate Hash or ID to verify its authenticity on the Ethereum Blockchain.
+                            </p>
+                        </div>
+                        <div class="card-body">
+                            <div class="input-group">
+                                <label>Certificate Hash or ID</label>
+                                <div class="search-box">
+                                    <input type="text" id="verifyInput" placeholder="0x... or 1">
+                                    <button id="verifyBtn" class="btn btn-primary">Verify</button>
+                                </div>
+                            </div>
+
+                            <div id="verificationResult" class="result-card hidden">
+                                <div class="result-header">
+                                    <div class="status-icon success"><ion-icon name="checkmark-circle"></ion-icon></div>
+                                    <div class="status-text">
+                                        <h4>Valid Certificate</h4>
+                                        <span class="timestamp">Issued on <span id="certDate">-</span></span>
+                                    </div>
+                                </div>
+                                <div class="result-details">
+                                    <div class="detail-item">
+                                        <span class="label">Student Name</span>
+                                        <span class="value" id="certName">-</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="label">Diploma</span>
+                                        <span class="value" id="certDiploma">-</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="label">Student ID</span>
+                                        <span class="value" id="certStudentId">-</span>
+                                    </div>
+                                    <div class="detail-item">
+                                        <span class="label">Graduation Year</span>
+                                        <span class="value" id="certYear">-</span>
+                                    </div>
+                                    <div class="detail-item full">
+                                        <span class="label">Certificate Hash</span>
+                                        <span class="value small" id="certHashDisplay">-</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div id="verificationError" class="result-card error hidden">
+                                <div class="result-header">
+                                    <div class="status-icon fail"><ion-icon name="close-circle"></ion-icon></div>
+                                    <div class="status-text">
+                                        <h4>Invalid Certificate</h4>
+                                        <span>No record found for this input.</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Admin View -->
+                <section id="adminView" class="view">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Issue New Diploma</h3>
+                            <p>Restricted to authorized university personnel.</p>
+                        </div>
+                        <div class="card-body">
+                            <div id="adminLoginOverlay" class="overlay">
+                                <div class="lock-msg">
+                                    <ion-icon name="lock-closed-outline"></ion-icon>
+                                    <p>Please connect an Admin Wallet to access this form.</p>
+                                </div>
+                            </div>
+
+                            <form id="issueForm">
+                                <div class="form-grid">
+                                    <div class="form-group">
+                                        <label>Student Name</label>
+                                        <input type="text" id="studentName" placeholder="e.g. John Doe" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Student ID</label>
+                                        <input type="text" id="studentId" placeholder="e.g. 2024-ENIAD-001" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Diploma Title</label>
+                                        <input type="text" id="diplomaTitle"
+                                            placeholder="e.g. Master of Computer Science" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label>Graduation Year</label>
+                                        <input type="number" id="gradYear" value="2025" required>
+                                    </div>
+                                </div>
+                                <div class="form-actions">
+                                    <button type="submit" id="issueBtn" class="btn btn-primary">Issue
+                                        Certificate</button>
+                                </div>
+                            </form>
+
+                            <div id="issueResult" class="notification hidden">
+                                <ion-icon name="information-circle"></ion-icon>
+                                <span id="issueMsg">Transaction sent...</span>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+            </div>
+        </main>
+    </div>
+
+    <script src="config.js"></script>
+    <!-- Artifacts will be assumed at ./artifacts/contracts/... -->
+    <script src="app.js"></script>
+</body>
+
+</html>
