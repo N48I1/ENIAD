@@ -15,6 +15,8 @@
 
     <!-- Ethers.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+    <!-- html2pdf.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
     <!-- Styles -->
     <link rel="stylesheet" href="style.css">
@@ -137,36 +139,55 @@
                                 </div>
                             </div>
 
-                            <!-- Success Result -->
-                            <div id="verificationResult" class="result-card hidden">
-                                <div class="result-header">
-                                    <div class="status-icon success"><ion-icon name="checkmark-circle"></ion-icon></div>
-                                    <div class="status-text">
-                                        <h4>Valid Certificate</h4>
-                                        <span class="timestamp">Issued on <span id="certDate">-</span></span>
+                            <!-- Success Result (Diploma View) -->
+                            <div id="verificationResult" class="diploma-wrapper hidden">
+                                <div id="verifyDiploma" class="diploma-border">
+                                    <div class="diploma-header">
+                                        <ion-icon name="ribbon-outline" class="diploma-icon"></ion-icon>
+                                        <h2>ENIAD</h2>
+                                        <span class="school-name">NATIONAL SCHOOL OF ARTIFICIAL INTELLIGENCE AND
+                                            DIGITALE</span>
+                                        <div class="diploma-title">Digital Certificate of Completion</div>
+                                    </div>
+                                    <div class="diploma-body">
+                                        <p>This certifies that</p>
+                                        <h3 id="verifyCertName">Student Name</h3>
+                                        <p>has successfully completed the requirements for the major in</p>
+                                        <h4 id="verifyCertMajor">Major Name</h4>
+                                        <div class="diploma-meta">
+                                            <span><strong>Year:</strong> <span id="verifyCertYear">2025</span></span>
+                                            <span><strong>ID:</strong> <span id="verifyCertIds">CNI /
+                                                    APOGEE</span></span>
+                                        </div>
+                                    </div>
+
+                                    <div class="signatures">
+                                        <div class="sig-block">
+                                            <div class="sig-line"></div>
+                                            <strong>MAJDOUBI ILYAS</strong>
+                                            <span>Issuer</span>
+                                        </div>
+                                        <div class="sig-block">
+                                            <div class="sig-line"></div>
+                                            <strong>EL HILALI NABIL</strong>
+                                            <span>School Director</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="diploma-footer">
+                                        <div class="hash-box">
+                                            <small>Certificate Hash:</small>
+                                            <div class="copy-row">
+                                                <code id="verifyCertHash">0x...</code>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="result-details">
-                                    <div class="detail-item">
-                                        <span class="label">Student Name</span>
-                                        <span class="value" id="certName">-</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="label">Diploma</span>
-                                        <span class="value" id="certDiploma">-</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="label">Student ID</span>
-                                        <span class="value" id="certStudentId">-</span>
-                                    </div>
-                                    <div class="detail-item">
-                                        <span class="label">Graduation Year</span>
-                                        <span class="value" id="certYear">-</span>
-                                    </div>
-                                    <div class="detail-item full">
-                                        <span class="label">Certificate Hash</span>
-                                        <span class="value small" id="certHashDisplay">-</span>
-                                    </div>
+                                <div class="preview-actions" style="text-align: center; margin-top: 1.5rem;">
+                                    <button class="btn btn-outline" onclick="downloadPDF('verifyDiploma')">
+                                        <ion-icon name="download-outline"></ion-icon>
+                                        Download PDF
+                                    </button>
                                 </div>
                             </div>
 
@@ -255,11 +276,13 @@
 
                             <!-- Diploma Preview (Hidden by default, shown after issuance) -->
                             <div id="diplomaPreview" class="diploma-preview hidden">
-                                <div class="diploma-border">
+                                <div id="issuedDiploma" class="diploma-border">
                                     <div class="diploma-header">
                                         <ion-icon name="ribbon-outline" class="diploma-icon"></ion-icon>
                                         <h2>ENIAD</h2>
-                                        <span>Digital Certificate of Completion</span>
+                                        <span class="school-name">NATIONAL SCHOOL OF ARTIFICIAL INTELLIGENCE AND
+                                            DIGITALE</span>
+                                        <div class="diploma-title">Digital Certificate of Completion</div>
                                     </div>
                                     <div class="diploma-body">
                                         <p>This certifies that</p>
@@ -271,6 +294,20 @@
                                             <span><strong>ID:</strong> <span id="previewIds">CNI / APOGEE</span></span>
                                         </div>
                                     </div>
+
+                                    <div class="signatures">
+                                        <div class="sig-block">
+                                            <div class="sig-line"></div>
+                                            <strong>MAJDOUBI ILYAS</strong>
+                                            <span>Issuer</span>
+                                        </div>
+                                        <div class="sig-block">
+                                            <div class="sig-line"></div>
+                                            <strong>EL HILALI NABIL</strong>
+                                            <span>School Director</span>
+                                        </div>
+                                    </div>
+
                                     <div class="diploma-footer">
                                         <div class="hash-box">
                                             <small>Certificate Hash:</small>
@@ -283,10 +320,18 @@
                                         </div>
                                     </div>
                                 </div>
+                                <div class="preview-actions" style="margin-top: 1rem;">
+                                    <button class="btn btn-outline" onclick="downloadPDF('issuedDiploma')">
+                                        <ion-icon name="download-outline"></ion-icon>
+                                        Download PDF
+                                    </button>
+                                </div>
                             </div>
-
-
                         </div>
+                    </div>
+                </section>
+
+            </div>
         </main>
     </div>
 

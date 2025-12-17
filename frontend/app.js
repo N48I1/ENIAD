@@ -425,27 +425,40 @@ async function verifyCertificate() {
         }
 
         // Check if revoked
+        // Check if revoked
         if (!cert.isValid) {
             revokedCard.classList.remove('hidden');
             showToast('Certificate has been revoked', 'warning');
             return;
         }
 
-        // Populate success UI
-        document.getElementById('certName').textContent = cert.studentName;
-        document.getElementById('certDiploma').textContent = cert.diploma;
-        document.getElementById('certStudentId').textContent = cert.studentId;
-        document.getElementById('certYear').textContent = cert.year.toString();
-        document.getElementById('certHashDisplay').textContent = hash;
+        // Populate success UI (Diploma Style)
+        document.getElementById('verifyCertName').textContent = cert.studentName;
 
-        const date = new Date(cert.issuedAt.toNumber() * 1000);
-        document.getElementById('certDate').textContent = date.toLocaleDateString('en-US', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-        });
+        // Extract Major from "Engineering Degree in [Major]"
+        const diplomaText = cert.diploma;
+        let major = diplomaText;
+        if (diplomaText.includes("Engineering Degree in ")) {
+            major = diplomaText.replace("Engineering Degree in ", "");
+        }
+        document.getElementById('verifyCertMajor').textContent = major;
 
-        resultCard.classList.remove('hidden');
+        // Combine IDs if stored that way or just show raw
+        // Handle potentially different formats. If it contains "|", assume it's the new format.
+        let displayIds = cert.studentId;
+        if (displayIds.includes("|")) {
+            displayIds = displayIds.replace("|", "/");
+        }
+        document.getElementById('verifyCertIds').textContent = displayIds;
+
+        document.getElementById('verifyCertYear').textContent = cert.year.toString();
+        document.getElementById('verifyCertHash').textContent = hash;
+
+        // Show Result
+        const diplomaWrapper = document.getElementById('verificationResult');
+        diplomaWrapper.classList.remove('hidden');
+        diplomaWrapper.scrollIntoView({ behavior: 'smooth' });
+
         showToast('Certificate verified successfully!', 'success');
 
     } catch (error) {
@@ -558,12 +571,30 @@ function copyHash() {
     });
 }
 
+function downloadPDF(elementId) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+
+    // Options for html2pdf
+    const opt = {
+        margin: 0.5,
+        filename: 'ENIAD_Certificate.pdf',
+        image: { type: 'jpeg', quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+    };
+
+    html2pdf().set(opt).from(element).save();
+}
+
 // =============================================================================
 // GLOBAL SCOPE
 // =============================================================================
 
-// Expose switchTab for HTML onclick handlers
+// Expose functions for HTML onclick handlers
 window.switchTab = switchTab;
+window.downloadPDF = downloadPDF;
+window.copyHash = copyHash;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', init);

@@ -1111,3 +1111,54 @@ select {
     background-position: right 1rem center;
     background-size: 0.65em auto;
 }
+
+/* Signatures */
+.signatures {
+    display: flex;
+    justify-content: space-around;
+    margin-top: 3rem;
+    padding: 1rem 2rem;
+}
+
+.sig-block {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.sig-line {
+    width: 150px;
+    height: 1px;
+    background: #000;
+    margin-bottom: 0.5rem;
+}
+
+.sig-block strong {
+    font-family: 'Times New Roman', serif;
+    font-size: 0.9rem;
+    color: #1e293b;
+    text-transform: uppercase;
+}
+
+.sig-block span {
+    font-size: 0.8rem;
+    color: #64748b;
+}
+
+.school-name {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    letter-spacing: 1px;
+    color: #64748b;
+    text-transform: uppercase;
+}
+
+.diploma-title {
+    font-family: 'Times New Roman', serif;
+    font-size: 1.25rem;
+    color: #0f172a;
+    margin-top: 0.5rem;
+    font-style: italic;
+}
