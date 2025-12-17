@@ -27,13 +27,24 @@ contract ENIADDigitalCertificate {
     // Mapping from certificate ID to certificate hash (for ID lookup)
     mapping(uint256 => bytes32) public certificateIds;
 
+    /// @notice Emitted when a new certificate is issued
+    /// @param certificateHash The unique hash identifying the certificate
+    /// @param certificateId The sequential ID of the certificate
+    /// @param studentId The student's ID number
     event CertificateIssued(bytes32 indexed certificateHash, uint256 indexed certificateId, string studentId);
 
+    /// @notice Emitted when a certificate is revoked
+    /// @param certificateHash The unique hash of the revoked certificate
+    /// @param certificateId The ID of the revoked certificate
+    event CertificateRevoked(bytes32 indexed certificateHash, uint256 indexed certificateId);
+
+    /// @notice Restricts function access to contract admin only
     modifier onlyAdmin() {
         require(msg.sender == admin, "Only admin can perform this action");
         _;
     }
 
+    /// @notice Initializes the contract with deployer as admin
     constructor() {
         admin = msg.sender;
     }
@@ -45,6 +56,7 @@ contract ENIADDigitalCertificate {
      * @param _studentId Unique student ID (e.g. university roll number)
      * @param _diploma Name of the diploma/degree
      * @param _year Year of graduation
+     * @return The unique hash of the newly issued certificate
      */
     function issueCertificate(
         string memory _studentName,
@@ -101,5 +113,40 @@ contract ENIADDigitalCertificate {
         bytes32 _hash = certificateIds[_id];
         require(certificates[_hash].isValid, "Certificate does not exist or is invalid");
         return certificates[_hash];
+    }
+
+    /**
+     * @notice Revokes a certificate by its ID (admin only).
+     * @dev Sets the isValid flag to false, preventing future verification.
+     * @param _id The unique ID of the certificate to revoke
+     */
+    function revokeCertificate(uint256 _id) external onlyAdmin {
+        bytes32 _hash = certificateIds[_id];
+        require(certificates[_hash].id != 0, "Certificate does not exist");
+        require(certificates[_hash].isValid, "Certificate is already revoked");
+        
+        certificates[_hash].isValid = false;
+        emit CertificateRevoked(_hash, _id);
+    }
+
+    /**
+     * @notice Returns the total number of certificates issued.
+     * @return The total count of certificates
+     */
+    function getCertificateCount() external view returns (uint256) {
+        return certificateCount;
+    }
+
+    /**
+     * @notice Retrieves a certificate by hash without requiring it to be valid.
+     * @dev Useful for checking revoked certificates.
+     * @param _hash The unique hash of the certificate
+     * @return exists Whether the certificate exists
+     * @return cert The certificate data
+     */
+    function getCertificateByHash(bytes32 _hash) external view returns (bool exists, Certificate memory cert) {
+        cert = certificates[_hash];
+        exists = cert.id != 0;
+        return (exists, cert);
     }
 }

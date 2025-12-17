@@ -4,24 +4,38 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ENIAD Digital Certificates</title>
+    <meta name="description"
+        content="ENIAD Digital Certificate Verification System - Verify academic certificates on the Ethereum blockchain">
+    <title>ENIAD Digital Certificates | Blockchain Verification</title>
+
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
     <!-- Ethers.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
+
     <!-- Styles -->
     <link rel="stylesheet" href="style.css">
+
     <!-- Ionicons -->
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
 </head>
 
 <body>
+    <!-- Toast Notification Container -->
+    <div id="toastContainer" class="toast-container"></div>
+
     <div class="app-wrapper">
+        <!-- Mobile Menu Button -->
+        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
+            <ion-icon name="menu-outline" style="font-size: 1.5rem;"></ion-icon>
+        </button>
+
         <!-- Sidebar -->
-        <aside class="sidebar">
+        <aside class="sidebar" id="sidebar">
             <div class="logo-area">
                 <ion-icon name="ribbon-outline" class="logo-icon"></ion-icon>
                 <div class="logo-text">
@@ -63,6 +77,18 @@
                 </div>
             </header>
 
+            <!-- Network Warning (hidden by default) -->
+            <div id="networkWarning" class="network-warning hidden">
+                <ion-icon name="warning-outline"></ion-icon>
+                <div class="network-warning-text">
+                    <strong>Wrong Network</strong>
+                    <span id="networkWarningText">Please switch to the correct network in MetaMask.</span>
+                </div>
+                <button class="btn btn-primary" id="switchNetworkBtn" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+                    Switch Network
+                </button>
+            </div>
+
             <!-- Views -->
             <div class="content-area">
 
@@ -72,11 +98,16 @@
                         <div class="hero-text">
                             <h3>Secure. Immutable. Verifiable.</h3>
                             <p>ENIAD's official blockchain-based certification system ensuring the authenticity of
-                                academic diplomas.</p>
+                                academic diplomas through cryptographic proofs.</p>
                             <div class="hero-actions">
-                                <button class="btn btn-primary" onclick="switchTab('verify')">Verify a
-                                    Certificate</button>
-                                <button class="btn btn-outline" onclick="switchTab('admin')">Issuer Login</button>
+                                <button class="btn btn-primary" onclick="switchTab('verify')">
+                                    <ion-icon name="shield-checkmark-outline"></ion-icon>
+                                    Verify a Certificate
+                                </button>
+                                <button class="btn btn-outline" onclick="switchTab('admin')">
+                                    <ion-icon name="key-outline"></ion-icon>
+                                    Issuer Login
+                                </button>
                             </div>
                         </div>
                         <div class="hero-visual">
@@ -90,18 +121,23 @@
                     <div class="card">
                         <div class="card-header">
                             <h3>Diploma Verification</h3>
-                            <p>Enter the Certificate Hash or ID to verify its authenticity on the Ethereum Blockchain.
-                            </p>
+                            <p>Enter the Certificate Hash (0x...) or ID number to verify its authenticity on the
+                                Ethereum Blockchain.</p>
                         </div>
                         <div class="card-body">
                             <div class="input-group">
                                 <label>Certificate Hash or ID</label>
                                 <div class="search-box">
-                                    <input type="text" id="verifyInput" placeholder="0x... or 1">
-                                    <button id="verifyBtn" class="btn btn-primary">Verify</button>
+                                    <input type="text" id="verifyInput"
+                                        placeholder="0x... or certificate ID (e.g. 1, 2, 3)">
+                                    <button id="verifyBtn" class="btn btn-primary">
+                                        <ion-icon name="search-outline"></ion-icon>
+                                        Verify
+                                    </button>
                                 </div>
                             </div>
 
+                            <!-- Success Result -->
                             <div id="verificationResult" class="result-card hidden">
                                 <div class="result-header">
                                     <div class="status-icon success"><ion-icon name="checkmark-circle"></ion-icon></div>
@@ -134,12 +170,24 @@
                                 </div>
                             </div>
 
+                            <!-- Revoked Result -->
+                            <div id="verificationRevoked" class="result-card error hidden">
+                                <div class="result-header">
+                                    <div class="status-icon fail"><ion-icon name="alert-circle"></ion-icon></div>
+                                    <div class="status-text">
+                                        <h4>Certificate Revoked</h4>
+                                        <span>This certificate has been revoked by the issuer.</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Error Result -->
                             <div id="verificationError" class="result-card error hidden">
                                 <div class="result-header">
                                     <div class="status-icon fail"><ion-icon name="close-circle"></ion-icon></div>
                                     <div class="status-text">
                                         <h4>Invalid Certificate</h4>
-                                        <span>No record found for this input.</span>
+                                        <span id="errorMessage">No record found for this input.</span>
                                     </div>
                                 </div>
                             </div>
@@ -152,7 +200,7 @@
                     <div class="card">
                         <div class="card-header">
                             <h3>Issue New Diploma</h3>
-                            <p>Restricted to authorized university personnel.</p>
+                            <p>Restricted to authorized university personnel. Connect your admin wallet to access.</p>
                         </div>
                         <div class="card-body">
                             <div id="adminLoginOverlay" class="overlay">
@@ -165,30 +213,32 @@
                             <form id="issueForm">
                                 <div class="form-grid">
                                     <div class="form-group">
-                                        <label>Student Name</label>
+                                        <label for="studentName">Student Name</label>
                                         <input type="text" id="studentName" placeholder="e.g. John Doe" required>
                                     </div>
                                     <div class="form-group">
-                                        <label>Student ID</label>
+                                        <label for="studentId">Student ID</label>
                                         <input type="text" id="studentId" placeholder="e.g. 2024-ENIAD-001" required>
                                     </div>
                                     <div class="form-group">
-                                        <label>Diploma Title</label>
+                                        <label for="diplomaTitle">Diploma Title</label>
                                         <input type="text" id="diplomaTitle"
                                             placeholder="e.g. Master of Computer Science" required>
                                     </div>
                                     <div class="form-group">
-                                        <label>Graduation Year</label>
-                                        <input type="number" id="gradYear" value="2025" required>
+                                        <label for="gradYear">Graduation Year</label>
+                                        <input type="number" id="gradYear" value="2025" min="1950" max="2100" required>
                                     </div>
                                 </div>
                                 <div class="form-actions">
-                                    <button type="submit" id="issueBtn" class="btn btn-primary">Issue
-                                        Certificate</button>
+                                    <button type="submit" id="issueBtn" class="btn btn-primary">
+                                        <ion-icon name="add-circle-outline"></ion-icon>
+                                        Issue Certificate
+                                    </button>
                                 </div>
                             </form>
 
-                            <div id="issueResult" class="notification hidden">
+                            <div id="issueResult" class="notification info hidden">
                                 <ion-icon name="information-circle"></ion-icon>
                                 <span id="issueMsg">Transaction sent...</span>
                             </div>
@@ -201,7 +251,6 @@
     </div>
 
     <script src="config.js"></script>
-    <!-- Artifacts will be assumed at ./artifacts/contracts/... -->
     <script src="app.js"></script>
 </body>
 

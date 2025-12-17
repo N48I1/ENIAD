@@ -1,34 +1,65 @@
-const CONTRACT_ARTIFACT_PATH = './artifacts/contracts/ENIADDigitalCertificate.sol/ENIADDigitalCertificate.json';
+/**
+ * ENIAD Digital Certificate System - Frontend Application
+ * 
+ * Main JavaScript for blockchain certificate issuance and verification
+ * Using Ethers.js v5.7.2 for Web3 interactions
+ * 
+ * Contract deployed on zkSync Sepolia Testnet
+ * Configuration loaded from config.js
+ */
 
-// Global State
+// =============================================================================
+// CONFIGURATION (loaded from config.js: CONFIG and CONTRACT_ABI)
+// =============================================================================
+
+// =============================================================================
+// GLOBAL STATE
+// =============================================================================
+
 let provider;
 let signer;
 let contract;
 let userAddress;
 let contractABI;
 let isAdmin = false;
+let isConnected = false;
 
-// UI Elements
+// =============================================================================
+// DOM ELEMENTS
+// =============================================================================
+
 const connectWalletBtn = document.getElementById('connectWalletBtn');
 const networkStatus = document.getElementById('networkStatus');
+const networkWarning = document.getElementById('networkWarning');
+const networkWarningText = document.getElementById('networkWarningText');
+const switchNetworkBtn = document.getElementById('switchNetworkBtn');
 const navBtns = document.querySelectorAll('.nav-btn');
 const views = document.querySelectorAll('.view');
 const adminLoginOverlay = document.getElementById('adminLoginOverlay');
+const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+const sidebar = document.getElementById('sidebar');
+const toastContainer = document.getElementById('toastContainer');
 
-// Init
+// =============================================================================
+// INITIALIZATION
+// =============================================================================
+
 async function init() {
-    await loadABI();
+    loadABI();
     setupEventListeners();
-    checkWalletConnection();
+    await checkWalletConnection();
 }
 
-async function loadABI() {
-    try {
-        const response = await fetch(CONTRACT_ARTIFACT_PATH);
-        const data = await response.json();
-        contractABI = data.abi;
-    } catch (error) {
-        console.error("Failed to load contract ABI:", error);
+function loadABI() {
+    // ABI is now loaded from config.js (CONTRACT_ABI variable)
+    if (typeof CONTRACT_ABI !== 'undefined') {
+        contractABI = CONTRACT_ABI;
+        console.log('✅ Contract ABI loaded from config');
+        console.log(`📍 Contract: ${CONFIG.contractAddress}`);
+        console.log(`🌐 Network: ${CONFIG.networkName}`);
+    } else {
+        console.error("❌ Contract ABI not found in config.js");
+        showToast('Contract ABI missing. Check config.js', 'error');
     }
 }
 
@@ -38,66 +69,204 @@ function setupEventListeners() {
         btn.addEventListener('click', () => {
             const target = btn.dataset.tab;
             switchTab(target);
+            // Close mobile menu on navigation
+            sidebar.classList.remove('open');
         });
     });
 
     // Wallet
-    connectWalletBtn.addEventListener('click', connectWallet);
+    connectWalletBtn.addEventListener('click', handleWalletClick);
+
+    // Network switch
+    if (switchNetworkBtn) {
+        switchNetworkBtn.addEventListener('click', switchNetwork);
+    }
 
     // Verify
     document.getElementById('verifyBtn').addEventListener('click', verifyCertificate);
+    document.getElementById('verifyInput').addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') verifyCertificate();
+    });
 
     // Issue
     document.getElementById('issueForm').addEventListener('submit', issueCertificate);
+
+    // Mobile menu
+    if (mobileMenuBtn) {
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+    }
+
+    // MetaMask events
+    if (window.ethereum) {
+        window.ethereum.on('accountsChanged', handleAccountsChanged);
+        window.ethereum.on('chainChanged', handleChainChanged);
+    }
 }
+
+// =============================================================================
+// NAVIGATION
+// =============================================================================
 
 function switchTab(tabName) {
     // Update Nav
     navBtns.forEach(btn => {
-        if (btn.dataset.tab === tabName) btn.classList.add('active');
-        else btn.classList.remove('active');
+        btn.classList.toggle('active', btn.dataset.tab === tabName);
     });
 
     // Update View
-    views.forEach(view => {
-        view.classList.remove('active');
-    });
-    document.getElementById(`${tabName}View`).classList.add('active');
+    views.forEach(view => view.classList.remove('active'));
+    document.getElementById(`${tabName}View`)?.classList.add('active');
+
+    // Update title
+    const titles = {
+        home: 'Welcome',
+        verify: 'Verify Certificate',
+        admin: 'Admin Dashboard'
+    };
+    document.getElementById('pageTitle').textContent = titles[tabName] || 'Welcome';
 }
 
-// Wallet Functions
+// =============================================================================
+// TOAST NOTIFICATIONS
+// =============================================================================
+
+function showToast(message, type = 'info', duration = 4000) {
+    const icons = {
+        success: 'checkmark-circle',
+        error: 'close-circle',
+        warning: 'warning',
+        info: 'information-circle'
+    };
+
+    const toast = document.createElement('div');
+    toast.className = `toast ${type}`;
+    toast.innerHTML = `
+        <ion-icon name="${icons[type]}"></ion-icon>
+        <span class="toast-text">${message}</span>
+        <button class="toast-close" aria-label="Close">
+            <ion-icon name="close-outline"></ion-icon>
+        </button>
+    `;
+
+    toastContainer.appendChild(toast);
+
+    // Close button
+    toast.querySelector('.toast-close').addEventListener('click', () => removeToast(toast));
+
+    // Auto remove
+    setTimeout(() => removeToast(toast), duration);
+}
+
+function removeToast(toast) {
+    toast.style.animation = 'toastOut 0.3s ease forwards';
+    setTimeout(() => toast.remove(), 300);
+}
+
+// =============================================================================
+// LOADING STATES
+// =============================================================================
+
+function setButtonLoading(button, loading, originalContent = null) {
+    if (loading) {
+        button.dataset.originalContent = button.innerHTML;
+        button.innerHTML = `<div class="spinner"></div> Processing...`;
+        button.disabled = true;
+    } else {
+        button.innerHTML = button.dataset.originalContent || originalContent;
+        button.disabled = false;
+    }
+}
+
+// =============================================================================
+// WALLET CONNECTION
+// =============================================================================
+
 async function checkWalletConnection() {
-    if (window.ethereum) {
-        try {
-            const accounts = await window.ethereum.request({ method: 'eth_accounts' });
-            if (accounts.length > 0) {
-                connectWallet();
-            }
-        } catch (err) {
-            console.error(err);
+    if (typeof window.ethereum === 'undefined') {
+        console.log('MetaMask not detected');
+        return;
+    }
+
+    try {
+        const accounts = await window.ethereum.request({ method: 'eth_accounts' });
+        if (accounts.length > 0) {
+            await connectWallet();
         }
+    } catch (err) {
+        console.error('Error checking wallet:', err);
+    }
+}
+
+async function handleWalletClick() {
+    if (isConnected) {
+        disconnectWallet();
+    } else {
+        await connectWallet();
     }
 }
 
 async function connectWallet() {
     if (typeof window.ethereum === 'undefined') {
-        alert("Please install MetaMask!");
+        showToast('Please install MetaMask to continue!', 'warning');
+        window.open('https://metamask.io/download/', '_blank');
         return;
     }
 
     try {
+        setButtonLoading(connectWalletBtn, true);
+
         const accounts = await window.ethereum.request({ method: 'eth_requestAccounts' });
         provider = new ethers.providers.Web3Provider(window.ethereum);
         signer = provider.getSigner();
         userAddress = await signer.getAddress();
+        isConnected = true;
+
+        // Check network
+        await checkNetwork();
 
         updateWalletUI(userAddress);
         await initContract();
 
+        showToast('Wallet connected successfully!', 'success');
+
     } catch (error) {
-        console.error(error);
-        alert("Failed to connect wallet.");
+        console.error('Wallet connection error:', error);
+        if (error.code === 4001) {
+            showToast('Connection request rejected', 'warning');
+        } else {
+            showToast('Failed to connect wallet', 'error');
+        }
+    } finally {
+        setButtonLoading(connectWalletBtn, false, `
+            <ion-icon name="wallet-outline"></ion-icon>
+            <span>Connect Wallet</span>
+        `);
     }
+}
+
+function disconnectWallet() {
+    provider = null;
+    signer = null;
+    contract = null;
+    userAddress = null;
+    isAdmin = false;
+    isConnected = false;
+
+    connectWalletBtn.innerHTML = `
+        <ion-icon name="wallet-outline"></ion-icon>
+        <span>Connect Wallet</span>
+    `;
+    connectWalletBtn.classList.remove('connected');
+
+    networkStatus.textContent = 'Not Connected';
+    networkStatus.classList.remove('connected');
+
+    networkWarning.classList.add('hidden');
+    adminLoginOverlay.classList.remove('hidden');
+
+    showToast('Wallet disconnected', 'info');
 }
 
 function updateWalletUI(address) {
@@ -107,10 +276,75 @@ function updateWalletUI(address) {
         <span>${shortAddr}</span>
     `;
     connectWalletBtn.classList.add('connected');
-
-    networkStatus.innerText = "Connected";
-    networkStatus.classList.add('connected');
 }
+
+// =============================================================================
+// NETWORK HANDLING
+// =============================================================================
+
+async function checkNetwork() {
+    const network = await provider.getNetwork();
+    const chainId = network.chainId;
+
+    if (chainId === CONFIG.chainId) {
+        networkStatus.textContent = CONFIG.networkName;
+        networkStatus.classList.add('connected');
+        networkWarning.classList.add('hidden');
+    } else {
+        networkStatus.textContent = `Chain ${chainId}`;
+        networkStatus.classList.remove('connected');
+        networkWarning.classList.remove('hidden');
+        networkWarningText.textContent = `Connected to wrong network (Chain ${chainId}). Please switch to ${CONFIG.networkName}.`;
+    }
+}
+
+async function switchNetwork() {
+    try {
+        await window.ethereum.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: CONFIG.chainIdHex }]
+        });
+    } catch (error) {
+        if (error.code === 4902) {
+            // Chain not added, try to add it
+            try {
+                await window.ethereum.request({
+                    method: 'wallet_addEthereumChain',
+                    params: [{
+                        chainId: CONFIG.chainIdHex,
+                        chainName: CONFIG.networkName,
+                        nativeCurrency: { name: 'ETH', symbol: CONFIG.currencySymbol, decimals: 18 },
+                        rpcUrls: [CONFIG.rpcUrl],
+                        blockExplorerUrls: [CONFIG.blockExplorerUrl]
+                    }]
+                });
+            } catch (addError) {
+                showToast('Failed to add network', 'error');
+            }
+        } else {
+            showToast('Failed to switch network', 'error');
+        }
+    }
+}
+
+function handleAccountsChanged(accounts) {
+    if (accounts.length === 0) {
+        disconnectWallet();
+    } else {
+        userAddress = accounts[0];
+        updateWalletUI(userAddress);
+        initContract();
+        showToast('Account changed', 'info');
+    }
+}
+
+function handleChainChanged() {
+    window.location.reload();
+}
+
+// =============================================================================
+// CONTRACT INITIALIZATION
+// =============================================================================
 
 async function initContract() {
     if (!CONFIG || !CONFIG.contractAddress || !contractABI) {
@@ -118,131 +352,191 @@ async function initContract() {
         return;
     }
 
-    contract = new ethers.Contract(CONFIG.contractAddress, contractABI, signer);
-
-    // Check Admin Status
     try {
+        contract = new ethers.Contract(CONFIG.contractAddress, contractABI, signer);
+
+        // Check Admin Status
         const adminAddress = await contract.admin();
-        if (adminAddress.toLowerCase() === userAddress.toLowerCase()) {
-            isAdmin = true;
+        isAdmin = adminAddress.toLowerCase() === userAddress.toLowerCase();
+
+        if (isAdmin) {
             adminLoginOverlay.classList.add('hidden');
+            showToast('Admin access granted', 'success');
         } else {
-            isAdmin = false;
             adminLoginOverlay.classList.remove('hidden');
         }
     } catch (err) {
-        console.error("Failed to check admin status", err);
+        console.error("Failed to initialize contract:", err);
+        showToast('Failed to connect to smart contract', 'error');
     }
 }
 
-// Verification Logic
+// =============================================================================
+// CERTIFICATE VERIFICATION
+// =============================================================================
+
 async function verifyCertificate() {
     const input = document.getElementById('verifyInput').value.trim();
-    if (!input) return alert("Please enter a Hash or ID");
-
-    // We can use a default provider if wallet not connected, 
-    // but for simplicity let's require connection or create a read-only provider
-    // If not connected, let's try to verify using read-only provider if possible, 
-    // but user probably needs to connect to local hardhat node? 
-    // For this demo, we assume user connects wallet or we use a JsonRpcProvider.
-
-    // Fallback if no wallet connected
-    let readContract = contract;
-    if (!readContract) {
-        // Try connecting to localhost:8545 directly for read-only
-        try {
-            const localProvider = new ethers.providers.JsonRpcProvider("http://localhost:8545");
-            readContract = new ethers.Contract(CONFIG.contractAddress, contractABI, localProvider);
-        } catch (e) {
-            return alert("Please connect wallet first.");
-        }
+    if (!input) {
+        showToast('Please enter a Hash or ID', 'warning');
+        return;
     }
 
+    const verifyBtn = document.getElementById('verifyBtn');
     const resultCard = document.getElementById('verificationResult');
+    const revokedCard = document.getElementById('verificationRevoked');
     const errorCard = document.getElementById('verificationError');
+
+    // Hide all results
     resultCard.classList.add('hidden');
+    revokedCard.classList.add('hidden');
     errorCard.classList.add('hidden');
 
+    setButtonLoading(verifyBtn, true);
+
     try {
-        let cert;
-        // Check if input is ID (numeric) or Hash (0x...)
-        if (input.startsWith("0x")) {
-            cert = await readContract.verifyCertificate(input);
-        } else {
-            // Assume ID
-            cert = await readContract.verifyCertificateById(input);
+        // Get contract for reading (use wallet if connected, else create read-only provider)
+        let readContract = contract;
+        if (!readContract) {
+            const zkSyncProvider = new ethers.providers.JsonRpcProvider(CONFIG.rpcUrl);
+            readContract = new ethers.Contract(CONFIG.contractAddress, contractABI, zkSyncProvider);
         }
 
-        // Populate UI
-        document.getElementById('certName').innerText = cert.studentName;
-        document.getElementById('certDiploma').innerText = cert.diploma;
-        document.getElementById('certStudentId').innerText = cert.studentId;
-        document.getElementById('certYear').innerText = cert.year.toString();
+        let exists, cert, hash;
 
-        // Hash (we might need to calculate it or fetch it if verifying by ID)
-        // If verifyById, we don't get the hash in the struct? 
-        // Wait, the struct doesn't contain the hash itself? 
-        // Added id to struct, but hash is the key. 
-        // We can display "Verified by ID" or similar.
-        document.getElementById('certHashDisplay').innerText = input.startsWith("0x") ? input : `ID: ${input}`;
+        // Check if input is ID (numeric) or Hash (0x...)
+        if (input.startsWith("0x")) {
+            hash = input;
+            [exists, cert] = await readContract.getCertificateByHash(input);
+        } else {
+            const id = parseInt(input);
+            if (isNaN(id) || id < 1) {
+                throw new Error('Invalid certificate ID');
+            }
+            hash = await readContract.certificateIds(id);
+            [exists, cert] = await readContract.getCertificateByHash(hash);
+        }
+
+        if (!exists || cert.id.toNumber() === 0) {
+            document.getElementById('errorMessage').textContent = 'No certificate found with this Hash or ID.';
+            errorCard.classList.remove('hidden');
+            showToast('Certificate not found', 'error');
+            return;
+        }
+
+        // Check if revoked
+        if (!cert.isValid) {
+            revokedCard.classList.remove('hidden');
+            showToast('Certificate has been revoked', 'warning');
+            return;
+        }
+
+        // Populate success UI
+        document.getElementById('certName').textContent = cert.studentName;
+        document.getElementById('certDiploma').textContent = cert.diploma;
+        document.getElementById('certStudentId').textContent = cert.studentId;
+        document.getElementById('certYear').textContent = cert.year.toString();
+        document.getElementById('certHashDisplay').textContent = hash;
 
         const date = new Date(cert.issuedAt.toNumber() * 1000);
-        document.getElementById('certDate').innerText = date.toLocaleDateString();
+        document.getElementById('certDate').textContent = date.toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
 
         resultCard.classList.remove('hidden');
+        showToast('Certificate verified successfully!', 'success');
 
     } catch (error) {
-        console.error(error);
+        console.error('Verification error:', error);
+        document.getElementById('errorMessage').textContent = error.reason || error.message || 'Verification failed';
         errorCard.classList.remove('hidden');
+        showToast('Verification failed', 'error');
+    } finally {
+        setButtonLoading(verifyBtn, false, `
+            <ion-icon name="search-outline"></ion-icon>
+            Verify
+        `);
     }
 }
 
-// Issuance Logic
+// =============================================================================
+// CERTIFICATE ISSUANCE
+// =============================================================================
+
 async function issueCertificate(e) {
     e.preventDefault();
-    if (!contract || !isAdmin) return alert("Unauthorized or not connected");
 
-    const name = document.getElementById('studentName').value;
-    const sId = document.getElementById('studentId').value;
-    const diploma = document.getElementById('diplomaTitle').value;
-    const year = document.getElementById('gradYear').value;
+    if (!contract || !isAdmin) {
+        showToast('Unauthorized or not connected', 'error');
+        return;
+    }
+
+    const name = document.getElementById('studentName').value.trim();
+    const sId = document.getElementById('studentId').value.trim();
+    const diploma = document.getElementById('diplomaTitle').value.trim();
+    const year = parseInt(document.getElementById('gradYear').value);
+
+    // Validation
+    if (!name || !sId || !diploma || !year) {
+        showToast('Please fill in all fields', 'warning');
+        return;
+    }
 
     const btn = document.getElementById('issueBtn');
-    const msg = document.getElementById('issueMsg');
     const resultBox = document.getElementById('issueResult');
+    const msg = document.getElementById('issueMsg');
+
+    setButtonLoading(btn, true);
+    resultBox.classList.remove('hidden');
+    resultBox.className = 'notification info';
+    msg.textContent = 'Please confirm transaction in MetaMask...';
 
     try {
-        btn.disabled = true;
-        btn.innerText = "Processing...";
-
-        resultBox.classList.remove('hidden');
-        msg.innerText = "Please confirm transaction in MetaMask...";
+        // Estimate gas
+        const gasEstimate = await contract.estimateGas.issueCertificate(name, sId, diploma, year);
+        showToast(`Estimated gas: ${gasEstimate.toString()}`, 'info');
 
         const tx = await contract.issueCertificate(name, sId, diploma, year);
-        msg.innerText = "Transaction sent! Waiting for confirmation...";
+        msg.textContent = 'Transaction sent! Waiting for confirmation...';
 
         const receipt = await tx.wait();
 
         // Find Hash from event
-        // Event: CertificateIssued(bytes32 indexed certificateHash, uint256 indexed certificateId, string studentId);
-        // Ethers v5 Receipt: receipt.events
-        const event = receipt.events.find(e => e.event === 'CertificateIssued');
-        const hash = event.args.certificateHash;
+        const event = receipt.events?.find(e => e.event === 'CertificateIssued');
+        const hash = event?.args?.certificateHash;
+        const certId = event?.args?.certificateId?.toNumber();
 
-        msg.innerHTML = `Success! Certificate Issued.<br><strong>Hash:</strong> ${hash}`;
-        // clear form
+        resultBox.className = 'notification success';
+        msg.innerHTML = `
+            <strong>✅ Certificate Issued Successfully!</strong><br>
+            <small>ID: ${certId}</small><br>
+            <small style="word-break: break-all;">Hash: ${hash}</small>
+        `;
+
         document.getElementById('issueForm').reset();
+        showToast('Certificate issued successfully!', 'success');
 
     } catch (error) {
-        console.error(error);
-        msg.innerText = "Error: " + (error.reason || error.message);
+        console.error('Issuance error:', error);
+        resultBox.className = 'notification error';
+        msg.textContent = `Error: ${error.reason || error.message}`;
+        showToast('Failed to issue certificate', 'error');
     } finally {
-        btn.disabled = false;
-        btn.innerText = "Issue Certificate";
+        setButtonLoading(btn, false, `
+            <ion-icon name="add-circle-outline"></ion-icon>
+            Issue Certificate
+        `);
     }
 }
 
-// Global scope for HTML onclicks if needed (though we used event listeners)
+// =============================================================================
+// GLOBAL SCOPE
+// =============================================================================
+
+// Expose switchTab for HTML onclick handlers
 window.switchTab = switchTab;
 
-init();
+// Initialize app
+document.addEventListener('DOMContentLoaded', init);
