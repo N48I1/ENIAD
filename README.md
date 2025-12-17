@@ -232,6 +232,22 @@ ENIAD-SmartCert/
 └── README.md
 ```
 
+## 🚀 Deployment
+
+Since the app is now fully static (no backend server required), you can deploy it easily.
+
+### Option 1: Vercel (Recommended)
+1. Install Vercel CLI or go to [vercel.com](https://vercel.com)
+2. Import this repository
+3. In **Project Settings** > **General** > **Root Directory**, click "Edit" and select `frontend`
+4. Click **Deploy**
+
+### Option 2: GitHub Pages
+1. Go to repository **Settings** > **Pages**
+2. Under **Build and deployment**, select **GitHub Actions**
+3. The included workflow `.github/workflows/deploy.yml` will automatically deploy the `frontend` folder
+4. Visit your site at `https://your-username.github.io/ENIAD-SmartCert/`
+
 ## 🔒 Security Features
 
 - **Smart Contract**: onlyAdmin modifier, input validation, reentrancy-safe
