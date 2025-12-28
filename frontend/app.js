@@ -47,6 +47,10 @@ const toastContainer = document.getElementById('toastContainer');
 async function init() {
     loadABI();
     setupEventListeners();
+
+    // Load Home page by default
+    switchTab('home');
+
     await checkWalletConnection();
 }
 
@@ -65,37 +69,33 @@ function loadABI() {
 
 function setupEventListeners() {
     // Navigation
-    navBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            const target = btn.dataset.tab;
-            switchTab(target);
-            // Close mobile menu on navigation
-            sidebar.classList.remove('open');
-        });
+    // Event Listeners for Navigation
+    document.getElementById('profileBtn')?.addEventListener('click', toggleProfileMenu); // Optional if using profile menu
+
+    // Navigation Buttons (Delegation or re-query)
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        btn.addEventListener('click', () => switchTab(btn.dataset.tab));
     });
 
-    // Wallet
-    connectWalletBtn.addEventListener('click', handleWalletClick);
+    document.getElementById('connectWalletBtn').addEventListener('click', handleWalletClick); // Changed from connectWallet to handleWalletClick
+    document.getElementById('verifyBtn').addEventListener('click', verifyCertificate);
+    document.getElementById('issueForm').addEventListener('submit', issueCertificate);
+
+    // Add "Enter" key listener for Verification Input
+    document.getElementById('verifyInput').addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') verifyCertificate();
+    });
+
+    // Mobile menu
+    if (mobileMenuBtn && sidebar) {
+        mobileMenuBtn.addEventListener('click', () => {
+            sidebar.classList.toggle('open');
+        });
+    }
 
     // Network switch
     if (switchNetworkBtn) {
         switchNetworkBtn.addEventListener('click', switchNetwork);
-    }
-
-    // Verify
-    document.getElementById('verifyBtn').addEventListener('click', verifyCertificate);
-    document.getElementById('verifyInput').addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') verifyCertificate();
-    });
-
-    // Issue
-    document.getElementById('issueForm').addEventListener('submit', issueCertificate);
-
-    // Mobile menu
-    if (mobileMenuBtn) {
-        mobileMenuBtn.addEventListener('click', () => {
-            sidebar.classList.toggle('open');
-        });
     }
 
     // MetaMask events
@@ -103,6 +103,14 @@ function setupEventListeners() {
         window.ethereum.on('accountsChanged', handleAccountsChanged);
         window.ethereum.on('chainChanged', handleChainChanged);
     }
+
+    // Initial Checks (These were not in the original setupEventListeners, adding them here as per the provided edit)
+    // Note: checkNetwork, checkIfWalletIsConnected, updateStats, setupStatsObserver are not defined in the original document.
+    // Assuming they are meant to be called here and will be defined elsewhere or are placeholders.
+    // await checkNetwork(); // This is already called in connectWallet, might be redundant or needs context.
+    // await checkIfWalletIsConnected(); // This seems to be a new function.
+    // await updateStats(); // This seems to be a new function.
+    // setupStatsObserver(); // This seems to be a new function.
 }
 
 // =============================================================================
@@ -110,22 +118,56 @@ function setupEventListeners() {
 // =============================================================================
 
 function switchTab(tabName) {
-    // Update Nav
-    navBtns.forEach(btn => {
-        btn.classList.toggle('active', btn.dataset.tab === tabName);
+    // If trying to access admin without being an admin, show the overlay
+    if (tabName === 'admin' && !isAdmin) {
+        adminLoginOverlay.classList.remove('hidden');
+        return; // Don't switch to admin tab
+    }
+
+    // Hide admin overlay when navigating away or if admin
+    adminLoginOverlay.classList.add('hidden');
+
+    // Hide all views
+    document.querySelectorAll('.view').forEach(el => el.classList.add('hidden'));
+
+    // Show target view
+    const target = document.getElementById(`${tabName}View`);
+    if (target) {
+        target.classList.remove('hidden');
+        // Animation trigger could go here
+    }
+
+    // Update Nav State
+    document.querySelectorAll('.nav-btn').forEach(btn => {
+        if (btn.dataset.tab === tabName) {
+            btn.classList.add('bg-white/10', 'text-white');
+            btn.classList.remove('text-gray-300');
+        } else {
+            btn.classList.remove('bg-white/10', 'text-white');
+            btn.classList.add('text-gray-300');
+        }
     });
 
-    // Update View
-    views.forEach(view => view.classList.remove('active'));
-    document.getElementById(`${tabName}View`)?.classList.add('active');
-
-    // Update title
+    // Update Titles
     const titles = {
         home: 'Welcome',
+        about: 'About Us',
         verify: 'Verify Certificate',
         admin: 'Admin Dashboard'
     };
-    document.getElementById('pageTitle').textContent = titles[tabName] || 'Welcome';
+    const subtitles = {
+        home: 'Manage and verify digital academic credentials',
+        about: 'Learn more about our blockchain mission',
+        verify: 'Enter certificate ID to verify its authenticity',
+        admin: 'Issue and manage student certificates'
+    };
+
+    if (document.getElementById('pageTitle')) {
+        document.getElementById('pageTitle').textContent = titles[tabName] || 'Welcome';
+    }
+    if (document.getElementById('pageSubtitle')) {
+        document.getElementById('pageSubtitle').textContent = subtitles[tabName] || '';
+    }
 }
 
 // =============================================================================
@@ -254,28 +296,78 @@ function disconnectWallet() {
     isAdmin = false;
     isConnected = false;
 
-    connectWalletBtn.innerHTML = `
-        <ion-icon name="wallet-outline"></ion-icon>
-        <span>Connect Wallet</span>
-    `;
-    connectWalletBtn.classList.remove('connected');
+    const btn = document.getElementById('connectWalletBtn');
+    const btnText = document.getElementById('walletBtnText');
+    const badge = document.getElementById('roleBadge');
 
-    networkStatus.textContent = 'Not Connected';
-    networkStatus.classList.remove('connected');
+    // Reset button text
+    btnText.textContent = 'Connect Wallet';
 
-    networkWarning.classList.add('hidden');
-    adminLoginOverlay.classList.remove('hidden');
+    // Reset button color to original purple gradient
+    btn.classList.remove('from-green-600', 'to-emerald-600', 'hover:from-green-500', 'hover:to-emerald-500', 'shadow-green-500/20', 'connected');
+    btn.classList.add('from-indigo-600', 'to-purple-600', 'hover:from-indigo-500', 'hover:to-purple-500', 'shadow-indigo-500/20');
+
+    // Hide role badge
+    if (badge) {
+        badge.classList.add('hidden');
+        badge.textContent = '';
+    }
+
+    if (networkStatus) {
+        networkStatus.textContent = 'Not Connected';
+        networkStatus.classList.remove('connected');
+    }
+
+    if (networkWarning) networkWarning.classList.add('hidden');
+    if (adminLoginOverlay) adminLoginOverlay.classList.remove('hidden');
 
     showToast('Wallet disconnected', 'info');
 }
 
+
 function updateWalletUI(address) {
     const shortAddr = `${address.substring(0, 6)}...${address.substring(address.length - 4)}`;
-    connectWalletBtn.innerHTML = `
-        <ion-icon name="wallet"></ion-icon>
-        <span>${shortAddr}</span>
-    `;
-    connectWalletBtn.classList.add('connected');
+    const btn = document.getElementById('connectWalletBtn');
+    const btnText = document.getElementById('walletBtnText');
+
+    if (!btn) {
+        console.error("connectWalletBtn not found");
+        return;
+    }
+
+    // Update button text (use btnText if exists, otherwise set innerHTML on btn)
+    if (btnText) {
+        btnText.textContent = shortAddr;
+    } else {
+        // Fallback: update the button directly
+        btn.innerHTML = `<ion-icon name="wallet"></ion-icon> <span>${shortAddr}</span>`;
+    }
+
+    // Change to green connected state
+    btn.classList.remove('from-indigo-600', 'to-purple-600', 'hover:from-indigo-500', 'hover:to-purple-500', 'shadow-indigo-500/20');
+    btn.classList.add('from-green-600', 'to-emerald-600', 'hover:from-green-500', 'hover:to-emerald-500', 'shadow-green-500/20');
+    btn.classList.add('connected');
+
+    console.log("✅ Wallet UI updated:", shortAddr);
+}
+
+
+// Function to update the role badge (called after admin check)
+function updateRoleBadge() {
+    const badge = document.getElementById('roleBadge');
+    if (!badge) return;
+
+    badge.classList.remove('hidden');
+
+    if (isAdmin) {
+        badge.textContent = 'Admin';
+        badge.classList.remove('text-gray-400', 'border-gray-600', 'bg-gray-800');
+        badge.classList.add('text-green-400', 'border-green-500/50', 'bg-green-500/10');
+    } else {
+        badge.textContent = 'User';
+        badge.classList.remove('text-green-400', 'border-green-500/50', 'bg-green-500/10');
+        badge.classList.add('text-gray-400', 'border-gray-600', 'bg-gray-800');
+    }
 }
 
 // =============================================================================
@@ -287,16 +379,23 @@ async function checkNetwork() {
     const chainId = network.chainId;
 
     if (chainId === CONFIG.chainId) {
-        networkStatus.textContent = CONFIG.networkName;
-        networkStatus.classList.add('connected');
-        networkWarning.classList.add('hidden');
+        if (networkStatus) {
+            networkStatus.textContent = CONFIG.networkName;
+            networkStatus.classList.add('connected');
+        }
+        if (networkWarning) networkWarning.classList.add('hidden');
+        console.log("✅ Correct network:", CONFIG.networkName);
     } else {
-        networkStatus.textContent = `Chain ${chainId}`;
-        networkStatus.classList.remove('connected');
-        networkWarning.classList.remove('hidden');
-        networkWarningText.textContent = `Connected to wrong network (Chain ${chainId}). Please switch to ${CONFIG.networkName}.`;
+        if (networkStatus) {
+            networkStatus.textContent = `Chain ${chainId}`;
+            networkStatus.classList.remove('connected');
+        }
+        if (networkWarning) networkWarning.classList.remove('hidden');
+        if (networkWarningText) networkWarningText.textContent = `Connected to wrong network (Chain ${chainId}). Please switch to ${CONFIG.networkName}.`;
+        showToast(`Wrong network! Please switch to ${CONFIG.networkName}`, 'warning');
     }
 }
+
 
 async function switchNetwork() {
     try {
@@ -352,24 +451,37 @@ async function initContract() {
         return;
     }
 
+    console.log("🔗 Initializing contract...");
+    console.log("📍 Contract Address:", CONFIG.contractAddress);
+    console.log("👤 Connected Wallet:", userAddress);
+
     try {
         contract = new ethers.Contract(CONFIG.contractAddress, contractABI, signer);
 
         // Check Admin Status
         const adminAddress = await contract.admin();
+        console.log("🔐 Contract Admin:", adminAddress);
+        console.log("🔍 Comparing:", userAddress?.toLowerCase(), "===", adminAddress?.toLowerCase());
+
         isAdmin = adminAddress.toLowerCase() === userAddress.toLowerCase();
+        console.log("✅ isAdmin:", isAdmin);
+
+        // Update Role Badge in UI
+        updateRoleBadge();
 
         if (isAdmin) {
             adminLoginOverlay.classList.add('hidden');
             showToast('Admin access granted', 'success');
         } else {
-            adminLoginOverlay.classList.remove('hidden');
+            // Don't show overlay here - let switchTab handle it
+            console.log("⚠️ User is not admin");
         }
     } catch (err) {
-        console.error("Failed to initialize contract:", err);
-        showToast('Failed to connect to smart contract', 'error');
+        console.error("❌ Failed to initialize contract:", err);
+        showToast('Failed to connect to smart contract. Check console.', 'error');
     }
 }
+
 
 // =============================================================================
 // CERTIFICATE VERIFICATION
@@ -418,6 +530,10 @@ async function verifyCertificate() {
         }
 
         if (!exists || cert.id.toNumber() === 0) {
+            // Show container for not-found
+            const container = document.getElementById('verificationContainer');
+            if (container) container.classList.remove('hidden');
+
             document.getElementById('errorMessage').textContent = 'No certificate found with this Hash or ID.';
             errorCard.classList.remove('hidden');
             showToast('Certificate not found', 'error');
@@ -425,8 +541,11 @@ async function verifyCertificate() {
         }
 
         // Check if revoked
-        // Check if revoked
         if (!cert.isValid) {
+            // Show container for revoked
+            const container = document.getElementById('verificationContainer');
+            if (container) container.classList.remove('hidden');
+
             revokedCard.classList.remove('hidden');
             showToast('Certificate has been revoked', 'warning');
             return;
@@ -454,6 +573,10 @@ async function verifyCertificate() {
         document.getElementById('verifyCertYear').textContent = cert.year.toString();
         document.getElementById('verifyCertHash').textContent = hash;
 
+        // Show the container first, then the result card
+        const container = document.getElementById('verificationContainer');
+        if (container) container.classList.remove('hidden');
+
         // Show Result
         const diplomaWrapper = document.getElementById('verificationResult');
         diplomaWrapper.classList.remove('hidden');
@@ -464,6 +587,11 @@ async function verifyCertificate() {
     } catch (error) {
         console.error('Verification error:', error);
         document.getElementById('errorMessage').textContent = error.reason || error.message || 'Verification failed';
+
+        // Show container for error too
+        const container = document.getElementById('verificationContainer');
+        if (container) container.classList.remove('hidden');
+
         errorCard.classList.remove('hidden');
         showToast('Verification failed', 'error');
     } finally {
@@ -476,6 +604,7 @@ async function verifyCertificate() {
 
 // =============================================================================
 // CERTIFICATE ISSUANCE
+
 // =============================================================================
 
 async function issueCertificate(e) {
@@ -542,6 +671,10 @@ async function issueCertificate(e) {
         document.getElementById('previewYear').textContent = year;
         document.getElementById('previewIds').textContent = `${cni} / ${apogee}`;
         document.getElementById('previewHash').textContent = hash;
+
+        // Hide placeholder and show actual preview
+        const placeholder = document.getElementById('diplomaPlaceholder');
+        if (placeholder) placeholder.classList.add('hidden');
 
         preview.classList.remove('hidden');
         preview.scrollIntoView({ behavior: 'smooth' });

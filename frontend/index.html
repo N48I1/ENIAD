@@ -4,339 +4,536 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description"
-        content="ENIAD Digital Certificate Verification System - Verify academic certificates on the Ethereum blockchain">
-    <title>ENIAD Digital Certificates | Blockchain Verification</title>
+    <meta name="description" content="ENIAD Digital Certificate Verification System">
+    <title>ENIAD | Blockchain Certificates</title>
+
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Outfit', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: '#6366f1', // Indigo 500
+                        secondary: '#a855f7', // Purple 500
+                        dark: '#0f172a', // Slate 900
+                    }
+                }
+            }
+        }
+    </script>
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 
-    <!-- Ethers.js -->
+    <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
-    <!-- html2pdf.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-    <!-- Styles -->
-    <link rel="stylesheet" href="style.css">
-
-    <!-- Ionicons -->
+    <!-- Icons -->
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
     <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+
+    <!-- Custom Config -->
+    <style>
+        body {
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-header {
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(12px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Toast Animation */
+        @keyframes slideIn {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        .toast-enter {
+            animation: slideIn 0.3s ease forwards;
+        }
+    </style>
 </head>
 
-<body>
-    <!-- Toast Notification Container -->
-    <div id="toastContainer" class="toast-container"></div>
+<body
+    class="bg-gray-900 text-white min-h-screen relative overflow-x-hidden selection:bg-indigo-500 selection:text-white">
 
-    <div class="app-wrapper">
-        <!-- Mobile Menu Button -->
-        <button class="mobile-menu-btn" id="mobileMenuBtn" aria-label="Toggle menu">
-            <ion-icon name="menu-outline" style="font-size: 1.5rem;"></ion-icon>
-        </button>
-
-        <!-- Sidebar -->
-        <aside class="sidebar" id="sidebar">
-            <div class="logo-area">
-                <ion-icon name="ribbon-outline" class="logo-icon"></ion-icon>
-                <div class="logo-text">
-                    <h1>ENIAD</h1>
-                    <span>Digital Certificates</span>
-                </div>
-            </div>
-
-            <nav class="nav-menu">
-                <button class="nav-btn active" data-tab="home">
-                    <ion-icon name="home-outline"></ion-icon>
-                    <span>Home</span>
-                </button>
-                <button class="nav-btn" data-tab="verify">
-                    <ion-icon name="shield-checkmark-outline"></ion-icon>
-                    <span>Verify Diploma</span>
-                </button>
-                <button class="nav-btn" data-tab="admin">
-                    <ion-icon name="construct-outline"></ion-icon>
-                    <span>Admin Dashboard</span>
-                </button>
-            </nav>
-
-            <div class="connect-area">
-                <button id="connectWalletBtn" class="btn btn-connect">
-                    <ion-icon name="wallet-outline"></ion-icon>
-                    <span>Connect Wallet</span>
-                </button>
-            </div>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <!-- Header -->
-            <header class="top-bar">
-                <h2 id="pageTitle">Welcome</h2>
-                <div class="user-status">
-                    <span id="networkStatus" class="badge">Not Connected</span>
-                </div>
-            </header>
-
-            <!-- Network Warning (hidden by default) -->
-            <div id="networkWarning" class="network-warning hidden">
-                <ion-icon name="warning-outline"></ion-icon>
-                <div class="network-warning-text">
-                    <strong>Wrong Network</strong>
-                    <span id="networkWarningText">Please switch to the correct network in MetaMask.</span>
-                </div>
-                <button class="btn btn-primary" id="switchNetworkBtn" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
-                    Switch Network
-                </button>
-            </div>
-
-            <!-- Views -->
-            <div class="content-area">
-
-                <!-- Home View -->
-                <section id="homeView" class="view active">
-                    <div class="hero-card">
-                        <div class="hero-text">
-                            <h3>Secure. Immutable. Verifiable.</h3>
-                            <p>ENIAD's official blockchain-based certification system ensuring the authenticity of
-                                academic diplomas through cryptographic proofs.</p>
-                            <div class="hero-actions">
-                                <button class="btn btn-primary" onclick="switchTab('verify')">
-                                    <ion-icon name="shield-checkmark-outline"></ion-icon>
-                                    Verify a Certificate
-                                </button>
-                                <button class="btn btn-outline" onclick="switchTab('admin')">
-                                    <ion-icon name="key-outline"></ion-icon>
-                                    Issuer Login
-                                </button>
-                            </div>
-                        </div>
-                        <div class="hero-visual">
-                            <ion-icon name="school-outline"></ion-icon>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Verify View -->
-                <section id="verifyView" class="view">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Diploma Verification</h3>
-                            <p>Enter the Certificate Hash (0x...) or ID number to verify its authenticity on the
-                                Ethereum Blockchain.</p>
-                        </div>
-                        <div class="card-body">
-                            <div class="input-group">
-                                <label>Certificate Hash or ID</label>
-                                <div class="search-box">
-                                    <input type="text" id="verifyInput"
-                                        placeholder="0x... or certificate ID (e.g. 1, 2, 3)">
-                                    <button id="verifyBtn" class="btn btn-primary">
-                                        <ion-icon name="search-outline"></ion-icon>
-                                        Verify
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Success Result (Diploma View) -->
-                            <div id="verificationResult" class="diploma-wrapper hidden">
-                                <div id="verifyDiploma" class="diploma-border">
-                                    <div class="diploma-header">
-                                        <ion-icon name="ribbon-outline" class="diploma-icon"></ion-icon>
-                                        <h2>ENIAD</h2>
-                                        <span class="school-name">NATIONAL SCHOOL OF ARTIFICIAL INTELLIGENCE AND
-                                            DIGITALE</span>
-                                        <div class="diploma-title">Digital Certificate of Completion</div>
-                                    </div>
-                                    <div class="diploma-body">
-                                        <p>This certifies that</p>
-                                        <h3 id="verifyCertName">Student Name</h3>
-                                        <p>has successfully completed the requirements for the major in</p>
-                                        <h4 id="verifyCertMajor">Major Name</h4>
-                                        <div class="diploma-meta">
-                                            <span><strong>Year:</strong> <span id="verifyCertYear">2025</span></span>
-                                            <span><strong>ID:</strong> <span id="verifyCertIds">CNI /
-                                                    APOGEE</span></span>
-                                        </div>
-                                    </div>
-
-                                    <div class="signatures">
-                                        <div class="sig-block">
-                                            <div class="sig-line"></div>
-                                            <strong>MAJDOUBI ILYAS</strong>
-                                            <span>Issuer</span>
-                                        </div>
-                                        <div class="sig-block">
-                                            <div class="sig-line"></div>
-                                            <strong>EL HILALI NABIL</strong>
-                                            <span>School Director</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="diploma-footer">
-                                        <div class="hash-box">
-                                            <small>Certificate Hash:</small>
-                                            <div class="copy-row">
-                                                <code id="verifyCertHash">0x...</code>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="preview-actions" style="text-align: center; margin-top: 1.5rem;">
-                                    <button class="btn btn-outline" onclick="downloadPDF('verifyDiploma')">
-                                        <ion-icon name="download-outline"></ion-icon>
-                                        Download PDF
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- Revoked Result -->
-                            <div id="verificationRevoked" class="result-card error hidden">
-                                <div class="result-header">
-                                    <div class="status-icon fail"><ion-icon name="alert-circle"></ion-icon></div>
-                                    <div class="status-text">
-                                        <h4>Certificate Revoked</h4>
-                                        <span>This certificate has been revoked by the issuer.</span>
-                                    </div>
-                                </div>
-                            </div>
-
-                            <!-- Error Result -->
-                            <div id="verificationError" class="result-card error hidden">
-                                <div class="result-header">
-                                    <div class="status-icon fail"><ion-icon name="close-circle"></ion-icon></div>
-                                    <div class="status-text">
-                                        <h4>Invalid Certificate</h4>
-                                        <span id="errorMessage">No record found for this input.</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-                <!-- Admin View -->
-                <section id="adminView" class="view">
-                    <div class="card">
-                        <div class="card-header">
-                            <h3>Issue New Diploma</h3>
-                            <p>Restricted to authorized university personnel. Connect your admin wallet to access.</p>
-                        </div>
-                        <div class="card-body">
-                            <div id="adminLoginOverlay" class="overlay">
-                                <div class="lock-msg">
-                                    <ion-icon name="lock-closed-outline"></ion-icon>
-                                    <p>Please connect an Admin Wallet to access this form.</p>
-                                </div>
-                            </div>
-
-                            <form id="issueForm">
-                                <div class="form-grid">
-                                    <div class="form-group">
-                                        <label for="studentName">Full Name</label>
-                                        <input type="text" id="studentName" placeholder="e.g. John Doe" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="studentCni">Student ID (CNI)</label>
-                                        <input type="text" id="studentCni" placeholder="e.g. AB123456" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="studentApogee">APOGEE Code</label>
-                                        <input type="text" id="studentApogee" placeholder="e.g. 20230001" required>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="majorSelect">Major</label>
-                                        <select id="majorSelect" required>
-                                            <option value="" disabled selected>Select Major</option>
-                                            <option value="IRSI">IRSI</option>
-                                            <option value="ROC">ROC</option>
-                                            <option value="AI">AI</option>
-                                            <option value="GI">GI</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-group">
-                                        <label for="gradYear">Graduation Year</label>
-                                        <input type="number" id="gradYear" value="2025" min="1950" max="2100" required>
-                                    </div>
-                                </div>
-                                <div class="form-actions">
-                                    <button type="submit" id="issueBtn" class="btn btn-primary">
-                                        <ion-icon name="add-circle-outline"></ion-icon>
-                                        Issue Certificate
-                                    </button>
-                                </div>
-                            </form>
-
-                            <!-- Live Notification -->
-                            <div id="issueResult" class="notification info hidden">
-                                <ion-icon name="information-circle"></ion-icon>
-                                <span id="issueMsg">Transaction sent...</span>
-                            </div>
-
-                            <!-- Diploma Preview (Hidden by default, shown after issuance) -->
-                            <div id="diplomaPreview" class="diploma-preview hidden">
-                                <div id="issuedDiploma" class="diploma-border">
-                                    <div class="diploma-header">
-                                        <ion-icon name="ribbon-outline" class="diploma-icon"></ion-icon>
-                                        <h2>ENIAD</h2>
-                                        <span class="school-name">NATIONAL SCHOOL OF ARTIFICIAL INTELLIGENCE AND
-                                            DIGITALE</span>
-                                        <div class="diploma-title">Digital Certificate of Completion</div>
-                                    </div>
-                                    <div class="diploma-body">
-                                        <p>This certifies that</p>
-                                        <h3 id="previewName">Student Name</h3>
-                                        <p>has successfully completed the requirements for the major in</p>
-                                        <h4 id="previewMajor">Major Name</h4>
-                                        <div class="diploma-meta">
-                                            <span><strong>Year:</strong> <span id="previewYear">2025</span></span>
-                                            <span><strong>ID:</strong> <span id="previewIds">CNI / APOGEE</span></span>
-                                        </div>
-                                    </div>
-
-                                    <div class="signatures">
-                                        <div class="sig-block">
-                                            <div class="sig-line"></div>
-                                            <strong>MAJDOUBI ILYAS</strong>
-                                            <span>Issuer</span>
-                                        </div>
-                                        <div class="sig-block">
-                                            <div class="sig-line"></div>
-                                            <strong>EL HILALI NABIL</strong>
-                                            <span>School Director</span>
-                                        </div>
-                                    </div>
-
-                                    <div class="diploma-footer">
-                                        <div class="hash-box">
-                                            <small>Certificate Hash:</small>
-                                            <div class="copy-row">
-                                                <code id="previewHash">0x...</code>
-                                                <button class="btn-icon" onclick="copyHash()" title="Copy Hash">
-                                                    <ion-icon name="copy-outline"></ion-icon>
-                                                </button>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="preview-actions" style="margin-top: 1rem;">
-                                    <button class="btn btn-outline" onclick="downloadPDF('issuedDiploma')">
-                                        <ion-icon name="download-outline"></ion-icon>
-                                        Download PDF
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
-
-            </div>
-        </main>
+    <!-- Background Gradient -->
+    <div class="fixed inset-0 pointer-events-none z-0">
+        <div class="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-600/20 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-purple-600/20 rounded-full blur-[120px]">
+        </div>
     </div>
 
+    <!-- Toast Container -->
+    <div id="toastContainer" class="fixed top-24 right-5 z-50 flex flex-col gap-3"></div>
+
+    <!-- Top Navigation -->
+    <nav class="fixed top-0 left-0 w-full z-40 glass-header">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-20">
+                <!-- Logo -->
+                <div class="flex items-center gap-3">
+                    <div
+                        class="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+                        <ion-icon name="ribbon-outline" class="text-xl text-white"></ion-icon>
+                    </div>
+                    <div>
+                        <h1 class="font-bold text-xl tracking-wide">ENIAD</h1>
+                        <p class="text-[0.65rem] text-gray-400 uppercase tracking-wider font-medium">Digital
+                            Certificates</p>
+                    </div>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div class="hidden md:flex items-center gap-1 bg-white/5 rounded-full p-1 border border-white/5">
+                    <button
+                        class="nav-btn px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:bg-white/10 text-gray-300 hover:text-white"
+                        data-tab="home">
+                        Home
+                    </button>
+                    <button
+                        class="nav-btn px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:bg-white/10 text-gray-300 hover:text-white"
+                        data-tab="about">
+                        About
+                    </button>
+                    <button
+                        class="nav-btn px-6 py-2 rounded-full text-sm font-medium transition-all duration-300 hover:bg-white/10 text-gray-300 hover:text-white"
+                        data-tab="admin">
+                        Admin
+                    </button>
+                </div>
+
+                <!-- Connect Wallet Area -->
+                <div class="flex items-center gap-3">
+                    <!-- Role Badge (Hidden until connected) -->
+                    <span id="roleBadge"
+                        class="hidden px-3 py-1 text-xs font-bold uppercase rounded-full border"></span>
+
+                    <div id="networkStatus" class="hidden sm:block text-xs font-mono text-gray-500">
+                        <span class="w-2 h-2 rounded-full bg-red-500 inline-block mr-1"></span> Not Connected
+                    </div>
+                    <button id="connectWalletBtn"
+                        class="flex items-center gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white px-5 py-2.5 rounded-xl text-sm font-medium transition-all shadow-lg shadow-indigo-500/20 ring-1 ring-white/20">
+                        <ion-icon name="wallet-outline"></ion-icon>
+                        <span id="walletBtnText">Connect Wallet</span>
+                    </button>
+                </div>
+
+                <!-- Mobile Menu Button -->
+                <button id="mobileMenuBtn" class="md:hidden text-2xl text-gray-300 hover:text-white">
+                    <ion-icon name="menu-outline"></ion-icon>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Admin Warning Overlay (Shows only when accessing Admin without permission) -->
+    <div id="adminLoginOverlay"
+        class="hidden fixed inset-0 z-50 bg-gray-900/90 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-gray-800 border border-red-500/30 rounded-2xl p-8 max-w-md text-center shadow-2xl">
+            <div
+                class="w-16 h-16 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6 text-red-500 text-3xl">
+                <ion-icon name="lock-closed"></ion-icon>
+            </div>
+            <h3 class="text-xl font-bold text-white mb-2">Restricted Access</h3>
+            <p class="text-gray-400 mb-6">This area is restricted to authorized university administrators only.</p>
+            <button onclick="document.querySelector('[data-tab=home]').click()"
+                class="text-indigo-400 hover:text-indigo-300 font-medium">Return Home</button>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main class="pt-28 pb-12 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto relative z-10">
+
+        <!-- Header Dynamic Title -->
+        <div class="flex items-end justify-between mb-8 pb-4 border-b border-white/5">
+            <div>
+                <h2 id="pageTitle" class="text-3xl font-bold text-white">Welcome</h2>
+                <p id="pageSubtitle" class="text-gray-400 mt-1">Manage and verify digital academic credentials</p>
+            </div>
+        </div>
+
+        <!-- ================= HOME VIEW (Search Here) ================= -->
+        <section id="homeView" class="view hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center min-h-[50vh]">
+                <div class="space-y-8">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/20 text-indigo-400 text-sm font-medium">
+                        <span class="flex h-2 w-2 relative">
+                            <span
+                                class="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                            <span class="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                        </span>
+                        Live on zkSync Era Testnet
+                    </div>
+
+                    <h1 class="text-5xl lg:text-6xl font-bold leading-tight">
+                        Verify Diplomas <br>
+                        <span
+                            class="text-transparent bg-clip-text bg-gradient-to-r from-indigo-400 to-purple-400">Instantly.</span>
+                    </h1>
+                    <p class="text-lg text-gray-400 leading-relaxed max-w-lg">
+                        Enter a Certificate Hash or Student ID below to verify authenticity directly on the blockchain.
+                    </p>
+
+                    <!-- SEARCH BAR -->
+                    <div class="relative max-w-lg">
+                        <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-gray-400">
+                            <ion-icon name="shield-checkmark-outline"></ion-icon>
+                        </div>
+                        <input type="text" id="verifyInput"
+                            class="w-full bg-white/5 border border-white/10 text-white pl-11 pr-24 py-4 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:bg-white/10 transition-all placeholder-gray-500 shadow-xl"
+                            placeholder="Paste Hash (0x...) or Student ID">
+                        <button id="verifyBtn"
+                            class="absolute right-2 top-2 bottom-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 rounded-lg font-medium transition-colors shadow-lg">
+                            Verify
+                        </button>
+                    </div>
+
+                    <div class="pt-4 flex items-center gap-4 text-sm text-gray-500">
+                        <div class="flex -space-x-2">
+                            <div
+                                class="w-8 h-8 rounded-full bg-gray-800 border-2 border-gray-900 flex items-center justify-center text-xs">
+                                🎓</div>
+                            <div
+                                class="w-8 h-8 rounded-full bg-gray-800 border-2 border-gray-900 flex items-center justify-center text-xs">
+                                📜</div>
+                            <div
+                                class="w-8 h-8 rounded-full bg-gray-800 border-2 border-gray-900 flex items-center justify-center text-xs">
+                                🔐</div>
+                        </div>
+                        <p>Secured by Ethereum & zkSync</p>
+                    </div>
+                </div>
+
+                <!-- Visual / Results Container -->
+                <div class="relative">
+                    <!-- Result Area Overlay or Inline -->
+                    <div id="verificationContainer" class="hidden glass p-1 rounded-2xl shadow-2xl relative z-20">
+
+                        <!-- Success: Diploma -->
+                        <div id="verificationResult"
+                            class="hidden animate-fade-in-up bg-white rounded-xl overflow-hidden text-gray-900">
+                            <!-- Mini Diploma View -->
+                            <div id="verifyDiploma" class="p-6 md:p-8 border-8 border-double border-gray-100 relative">
+                                <div
+                                    class="absolute top-0 left-0 w-full h-full border-[12px] border-indigo-900/5 pointer-events-none">
+                                </div>
+                                <div class="text-center space-y-4">
+                                    <div class="flex items-center justify-center gap-2 text-indigo-900">
+                                        <ion-icon name="ribbon" class="text-2xl"></ion-icon>
+                                        <h1 class="font-serif font-bold text-xl tracking-wider">ENIAD</h1>
+                                    </div>
+                                    <div class="py-4 border-t border-b border-gray-100">
+                                        <p class="text-xs text-gray-500 font-serif italic">This certifies that</p>
+                                        <h2 id="verifyCertName"
+                                            class="text-xl md:text-2xl font-serif font-bold text-gray-900 my-1">Student
+                                            Name</h2>
+                                        <h3 id="verifyCertMajor" class="text-sm font-bold text-indigo-600">Engineering
+                                            Degree</h3>
+                                        <p class="text-[10px] text-gray-400 mt-2">ID: <span id="verifyCertIds">--</span>
+                                            | Year: <span id="verifyCertYear">--</span></p>
+                                    </div>
+                                    <!-- Signatures -->
+                                    <div class="flex justify-between items-end px-4 pt-2">
+                                        <div>
+                                            <div class="font-signature text-sm font-bold text-indigo-900">Majdoubi I.
+                                            </div>
+                                            <div
+                                                class="border-t border-gray-200 w-16 text-[8px] uppercase text-gray-400">
+                                                Issuer</div>
+                                        </div>
+                                        <div>
+                                            <div class="font-signature text-sm font-bold text-indigo-900">El Hilali N.
+                                            </div>
+                                            <div
+                                                class="border-t border-gray-200 w-16 text-[8px] uppercase text-gray-400">
+                                                Director</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Actions -->
+                            <div
+                                class="bg-gray-50 px-4 py-3 flex justify-between items-center border-t border-gray-100">
+                                <code id="verifyCertHash"
+                                    class="text-[10px] text-indigo-400 truncate max-w-[150px]">0x...</code>
+                                <div class="flex gap-2">
+                                    <button
+                                        onclick="document.getElementById('verificationContainer').classList.add('hidden')"
+                                        class="text-xs font-medium text-gray-500 hover:text-gray-800">Close</button>
+                                    <button onclick="downloadPDF('verifyDiploma')"
+                                        class="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded hover:bg-indigo-500 flex items-center gap-1">
+                                        <ion-icon name="download-outline"></ion-icon> PDF
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Revoked/Error States -->
+                        <div id="verificationRevoked"
+                            class="hidden p-6 bg-red-500/10 text-red-500 text-center rounded-xl">
+                            <ion-icon name="alert-circle" class="text-4xl mb-2"></ion-icon>
+                            <h4 class="font-bold">Revoked</h4>
+                            <p class="text-xs opacity-80 mt-1">This certificate has been revoked.</p>
+                            <button onclick="document.getElementById('verificationContainer').classList.add('hidden')"
+                                class="mt-4 text-xs underline">Close</button>
+                        </div>
+
+                        <div id="verificationError"
+                            class="hidden p-6 bg-gray-800 text-gray-300 text-center rounded-xl border border-gray-700">
+                            <ion-icon name="search" class="text-4xl mb-2 text-gray-500"></ion-icon>
+                            <h4 class="font-bold">No Record Found</h4>
+                            <p class="text-xs opacity-80 mt-1" id="errorMessage">Check the ID/Hash and try again.</p>
+                            <button onclick="document.getElementById('verificationContainer').classList.add('hidden')"
+                                class="mt-4 text-xs underline">Close</button>
+                        </div>
+                    </div>
+
+                    <!-- Placeholder Visual (When no result is shown) -->
+                    <div id="heroVisual"
+                        class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none -z-10">
+                        <div
+                            class="relative w-64 h-80 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl transform rotate-6 border border-white/5">
+                        </div>
+                        <div
+                            class="absolute w-64 h-80 bg-gradient-to-br from-white/5 to-white/10 rounded-2xl backdrop-blur-sm border border-white/10 -rotate-3">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ABOUT VIEW ================= -->
+        <section id="aboutView" class="view hidden">
+            <div class="max-w-4xl mx-auto space-y-12">
+                <div class="text-center space-y-4">
+                    <h2 class="text-4xl font-bold">About ENIAD Cert</h2>
+                    <p class="text-gray-400 max-w-2xl mx-auto">The National School of Artificial Intelligence and
+                        Digital (ENIAD) leverages cutting-edge blockchain technology to secure academic credentials.</p>
+                </div>
+
+                <div class="grid md:grid-cols-3 gap-6">
+                    <div class="glass p-6 rounded-2xl space-y-3">
+                        <div
+                            class="w-12 h-12 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-2xl">
+                            <ion-icon name="finger-print"></ion-icon></div>
+                        <h3 class="font-bold text-lg">Immutable</h3>
+                        <p class="text-sm text-gray-400">Once issued, certificates cannot be altered or deleted without
+                            a trace. The blockchain provides a permanent record.</p>
+                    </div>
+                    <div class="glass p-6 rounded-2xl space-y-3">
+                        <div
+                            class="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 text-2xl">
+                            <ion-icon name="globe"></ion-icon></div>
+                        <h3 class="font-bold text-lg">Global Verification</h3>
+                        <p class="text-sm text-gray-400">Employers and institutions worldwide can instantly verify the
+                            authenticity of a diploma using its unique hash.</p>
+                    </div>
+                    <div class="glass p-6 rounded-2xl space-y-3">
+                        <div
+                            class="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400 text-2xl">
+                            <ion-icon name="shield-checkmark"></ion-icon></div>
+                        <h3 class="font-bold text-lg">Fraud Proof</h3>
+                        <p class="text-sm text-gray-400">Cryptographic signatures prevent forgery. Only authorized
+                            university admin wallets can issue valid certificates.</p>
+                    </div>
+                </div>
+
+                <div class="glass p-8 rounded-3xl flex flex-col md:flex-row items-center gap-8">
+                    <div class="flex-1 space-y-4">
+                        <h3 class="text-2xl font-bold">Technical Stack</h3>
+                        <ul class="space-y-2 text-gray-300">
+                            <li class="flex items-center gap-2"><ion-icon name="checkmark-circle"
+                                    class="text-indigo-500"></ion-icon> Smart Contracts (Solidity)</li>
+                            <li class="flex items-center gap-2"><ion-icon name="checkmark-circle"
+                                    class="text-indigo-500"></ion-icon> zkSync Era Sepolia Testnet</li>
+                            <li class="flex items-center gap-2"><ion-icon name="checkmark-circle"
+                                    class="text-indigo-500"></ion-icon> Distributed Ledger Technology</li>
+                        </ul>
+                    </div>
+                    <div class="flex-1 text-center md:text-right">
+                        <p class="text-sm text-gray-500 mb-4">Developed by</p>
+                        <h4 class="text-xl font-bold">N48I1</h4>
+                        <p class="text-indigo-400">Blockchain Engineering Student</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= ADMIN VIEW ================= -->
+        <section id="adminView" class="view hidden">
+            <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+                <!-- Issue Form -->
+                <div class="lg:col-span-1 glass p-6 rounded-3xl h-fit sticky top-28">
+                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
+                        <ion-icon name="create-outline" class="text-indigo-400"></ion-icon>
+                        Issue New
+                    </h3>
+
+                    <form id="issueForm" class="space-y-4">
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1 ml-1">Full Name</label>
+                            <input type="text" id="studentName" required
+                                class="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none">
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1 ml-1">CNI</label>
+                                <input type="text" id="studentCni" required
+                                    class="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+                            <div>
+                                <label class="block text-xs font-medium text-gray-400 mb-1 ml-1">APOGEE</label>
+                                <input type="text" id="studentApogee" required
+                                    class="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+                            </div>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1 ml-1">Major</label>
+                            <select id="majorSelect" required
+                                class="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none appearance-none">
+                                <option value="" disabled selected>Select Major...</option>
+                                <option value="IRSI">IRSI</option>
+                                <option value="ROC">ROC</option>
+                                <option value="AI">AI</option>
+                                <option value="GI">GI</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-medium text-gray-400 mb-1 ml-1">Graduation Year</label>
+                            <input type="number" id="gradYear" value="2025" min="2000" max="2100" required
+                                class="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+                        </div>
+
+                        <button type="submit" id="issueBtn"
+                            class="w-full mt-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium py-3 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2">
+                            <ion-icon name="paper-plane-outline"></ion-icon> Issue Certificate
+                        </button>
+                    </form>
+
+                    <!-- Status Msg -->
+                    <div id="issueResult"
+                        class="hidden mt-4 p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-center text-sm text-indigo-300">
+                        <span id="issueMsg">Processing...</span>
+                    </div>
+                </div>
+
+                <!-- Live Preview -->
+                <div class="lg:col-span-2 space-y-4">
+                    <div class="flex items-center justify-between">
+                        <h3 class="text-xl font-bold flex items-center gap-2">
+                            <ion-icon name="eye-outline" class="text-indigo-400"></ion-icon>
+                            Live Preview
+                        </h3>
+                        <span class="text-xs text-gray-500">Generated automatically</span>
+                    </div>
+
+                    <!-- Placeholder -->
+                    <div id="diplomaPlaceholder"
+                        class="border-2 border-dashed border-gray-700 rounded-3xl h-96 flex flex-col items-center justify-center text-gray-500 p-8 text-center">
+                        <ion-icon name="document-text-outline" class="text-4xl mb-4 opacity-50"></ion-icon>
+                        <p>Fill out the form to generate a preview</p>
+                    </div>
+
+                    <!-- Actual Preview (Hidden initially) -->
+                    <div id="diplomaPreview" class="hidden">
+                        <div id="issuedDiploma"
+                            class="bg-white text-gray-900 p-10 rounded-xl shadow-xl border-8 border-double border-gray-200 relative overflow-hidden transform scale-95 origin-top">
+                            <!-- Diploma Structure -->
+                            <div
+                                class="absolute top-0 left-0 w-full h-full border-[12px] border-indigo-900/5 pointer-events-none">
+                            </div>
+                            <div class="text-center space-y-4 relative z-10">
+                                <div
+                                    class="w-16 h-16 bg-indigo-900 text-white rounded-full flex items-center justify-center mx-auto text-3xl shadow-lg">
+                                    <ion-icon name="school"></ion-icon>
+                                </div>
+                                <div>
+                                    <h1 class="text-3xl font-serif font-bold text-indigo-900 tracking-wider">ENIAD</h1>
+                                    <p class="text-[0.6rem] font-bold tracking-[0.2em] text-gray-500 mt-1 uppercase">
+                                        National School of AI & Digital</p>
+                                </div>
+                                <div class="py-6 space-y-3">
+                                    <p class="text-base font-serif italic text-gray-600">This certifies that</p>
+                                    <h2 id="previewName"
+                                        class="text-3xl font-serif font-bold text-gray-900 border-b border-gray-200 inline-block pb-1 px-4">
+                                        Student Name</h2>
+                                    <p class="text-base font-serif italic text-gray-600">has completed requirements for
+                                    </p>
+                                    <h3 id="previewMajor" class="text-xl font-bold text-indigo-800">Engineering Degree
+                                    </h3>
+                                    <div class="flex justify-center gap-6 text-xs text-gray-600 font-mono mt-2">
+                                        <div><span class="text-gray-400 mr-2">Year:</span><span
+                                                id="previewYear">2025</span></div>
+                                        <div><span class="text-gray-400 mr-2">ID:</span><span id="previewIds">---</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex justify-between items-end pt-8 px-4">
+                                    <div class="text-center">
+                                        <div class="font-serif font-bold text-indigo-900">Majdoubi I.</div>
+                                        <div
+                                            class="border-t border-gray-300 w-24 mx-auto text-[0.6rem] uppercase tracking-widest text-gray-500">
+                                            Issuer</div>
+                                    </div>
+                                    <div class="text-center">
+                                        <div class="font-serif font-bold text-indigo-900">El Hilali N.</div>
+                                        <div
+                                            class="border-t border-gray-300 w-24 mx-auto text-[0.6rem] uppercase tracking-widest text-gray-500">
+                                            Director</div>
+                                    </div>
+                                </div>
+                                <div class="mt-6 pt-2 border-t border-gray-100 text-center">
+                                    <code id="previewHash"
+                                        class="text-[0.6rem] text-indigo-400 break-all cursor-pointer hover:text-indigo-600"
+                                        onclick="copyHash()" title="Click to copy">0x... (Click Copy)</code>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="flex justify-end mt-4">
+                            <button onclick="downloadPDF('issuedDiploma')"
+                                class="text-sm flex items-center gap-2 text-indigo-400 hover:text-white transition-colors">
+                                <ion-icon name="download-outline"></ion-icon> Download PDF
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- JS -->
     <script src="config.js"></script>
     <script src="app.js"></script>
+
 </body>
 
 </html>
