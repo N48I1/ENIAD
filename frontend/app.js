@@ -214,10 +214,10 @@ async function refreshStatistics() {
         // Note: This assumes the contract has getStatistics() or similar functions
         // The user will need to update the smart contract to support these calls
 
-        if (certificateContract) {
+        if (contract) {
             // Try to call getTotalCertificates if available
             try {
-                const total = await certificateContract.getTotalCertificates();
+                const total = await contract.getTotalCertificates();
                 document.getElementById('statsTotalCerts').textContent = total.toString();
             } catch (e) {
                 document.getElementById('statsTotalCerts').textContent = 'N/A';
@@ -225,10 +225,10 @@ async function refreshStatistics() {
 
             // Try to get certificates by degree type
             try {
-                const diplomaCount = await certificateContract.getCertificatesByDegreeType('Diploma');
-                const masterCount = await certificateContract.getCertificatesByDegreeType('Master');
-                const phdCount = await certificateContract.getCertificatesByDegreeType('PhD');
-                const achievementCount = await certificateContract.getCertificatesByDegreeType('Achievement');
+                const diplomaCount = await contract.getCertificatesByDegreeType('Diploma');
+                const masterCount = await contract.getCertificatesByDegreeType('Master');
+                const phdCount = await contract.getCertificatesByDegreeType('PhD');
+                const achievementCount = await contract.getCertificatesByDegreeType('Achievement');
 
                 document.getElementById('statsDiploma').textContent = diplomaCount.toString();
                 document.getElementById('statsMaster').textContent = masterCount.toString();
@@ -243,10 +243,10 @@ async function refreshStatistics() {
 
             // Try to get certificates by major
             try {
-                const irsiCount = await certificateContract.getCertificatesByMajor('IRSI');
-                const rocCount = await certificateContract.getCertificatesByMajor('ROC');
-                const aiCount = await certificateContract.getCertificatesByMajor('AI');
-                const giCount = await certificateContract.getCertificatesByMajor('GI');
+                const irsiCount = await contract.getCertificatesByMajor('IRSI');
+                const rocCount = await contract.getCertificatesByMajor('ROC');
+                const aiCount = await contract.getCertificatesByMajor('AI');
+                const giCount = await contract.getCertificatesByMajor('GI');
 
                 document.getElementById('statsIRSI').textContent = irsiCount.toString();
                 document.getElementById('statsROC').textContent = rocCount.toString();
@@ -334,6 +334,11 @@ function switchTab(tabName) {
     if (document.getElementById('pageSubtitle')) {
         document.getElementById('pageSubtitle').textContent = subtitles[tabName] || '';
     }
+
+    // Auto-refresh statistics when switching to admin tab
+    if (tabName === 'admin' && contract) {
+        refreshStatistics();
+    }
 }
 
 // =============================================================================
@@ -378,7 +383,7 @@ async function revokeCertificateHandler(e) {
 
     try {
         // Call smart contract revoke function
-        const tx = await certificateContract.revokeCertificate(hash);
+        const tx = await contract.revokeCertificate(hash);
         await tx.wait();
 
         msgSpan.textContent = '✓ Certificate revoked successfully!';
@@ -414,7 +419,7 @@ async function lookupCertificateForUpdate() {
 
     try {
         // Call smart contract to get certificate data
-        const certData = await certificateContract.getCertificate(hash);
+        const certData = await contract.getCertificate(hash);
 
         if (!certData || !certData.studentName) {
             msgSpan.textContent = 'Certificate not found';
@@ -454,7 +459,7 @@ async function updateCertificateHandler(e) {
 
     try {
         // Call smart contract update function
-        const tx = await certificateContract.updateCertificate(hash, name, major, parseInt(year));
+        const tx = await contract.updateCertificate(hash, name, major, parseInt(year));
         await tx.wait();
 
         msgSpan.textContent = '✓ Certificate updated successfully!';
@@ -761,13 +766,17 @@ async function initContract() {
     try {
         contract = new ethers.Contract(CONFIG.contractAddress, contractABI, signer);
 
-        // Check Admin Status
-        const adminAddress = await contract.admin();
-        console.log("🔐 Contract Admin:", adminAddress);
-        console.log("🔍 Comparing:", userAddress?.toLowerCase(), "===", adminAddress?.toLowerCase());
-
-        isAdmin = adminAddress.toLowerCase() === userAddress.toLowerCase();
-        console.log("✅ isAdmin:", isAdmin);
+        // Check Admin Status using isAuthorized (checks if user is Director or Issuer)
+        try {
+            isAdmin = await contract.isAuthorized(userAddress);
+            console.log("✅ isAuthorized:", isAdmin);
+        } catch (e) {
+            // Fallback to old admin check for backward compatibility
+            const adminAddress = await contract.admin();
+            console.log("🔐 Contract Admin:", adminAddress);
+            isAdmin = adminAddress.toLowerCase() === userAddress.toLowerCase();
+            console.log("✅ isAdmin (legacy):", isAdmin);
+        }
 
         // Update Role Badge in UI
         updateRoleBadge();
@@ -777,7 +786,7 @@ async function initContract() {
             showToast('Admin access granted', 'success');
         } else {
             // Don't show overlay here - let switchTab handle it
-            console.log("⚠️ User is not admin");
+            console.log("⚠️ User is not authorized (neither Director nor Issuer)");
         }
     } catch (err) {
         console.error("❌ Failed to initialize contract:", err);
@@ -944,6 +953,8 @@ async function issueCertificate(e) {
     const apogee = document.getElementById('studentApogee').value.trim();
     const major = document.getElementById('majorSelect').value;
     const year = parseInt(document.getElementById('gradYear').value);
+    const degreeType = document.getElementById('degreeType')?.value || 'Diploma';
+    const issuerName = document.getElementById('issuerName')?.value.trim() || 'MAJDOUBI ILYAS';
 
     // Validation
     if (!name || !cni || !apogee || !major || !year) {
@@ -954,7 +965,6 @@ async function issueCertificate(e) {
     // Combine IDs for storage (Platform constraint)
     // Format: "CNI: [CNI] | APOGEE: [APOGEE]"
     const combinedId = `CNI: ${cni} | APOGEE: ${apogee}`;
-    const diplomaTitle = `Engineering Degree in ${major}`;
 
     const btn = document.getElementById('issueBtn');
     const resultBox = document.getElementById('issueResult');
@@ -971,11 +981,11 @@ async function issueCertificate(e) {
     msg.textContent = 'Please confirm transaction in MetaMask...';
 
     try {
-        // Estimate gas
-        const gasEstimate = await contract.estimateGas.issueCertificate(name, combinedId, diplomaTitle, year);
+        // Use issueCertificateExtended with degreeType and issuerName
+        const gasEstimate = await contract.estimateGas.issueCertificateExtended(name, combinedId, major, degreeType, issuerName, year);
         showToast(`Estimated gas: ${gasEstimate.toString()}`, 'info');
 
-        const tx = await contract.issueCertificate(name, combinedId, diplomaTitle, year);
+        const tx = await contract.issueCertificateExtended(name, combinedId, major, degreeType, issuerName, year);
         msg.textContent = 'Transaction sent! Waiting for confirmation...';
 
         const receipt = await tx.wait();
