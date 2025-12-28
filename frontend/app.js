@@ -52,6 +52,40 @@ async function init() {
     switchTab('home');
 
     await checkWalletConnection();
+
+    // Check URL for verification hash (QR code scan auto-verify)
+    checkUrlForVerification();
+
+    // Generate demo QR code for homepage (links to main site)
+    generateQRCode('demo3dQRCode', 'https://eniad-cert.vercel.app/');
+}
+
+// Check URL for hash parameter and auto-verify
+function checkUrlForVerification() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const hashToVerify = urlParams.get('hash') || urlParams.get('verify');
+
+    if (hashToVerify) {
+        console.log('🔍 Auto-verifying certificate from URL:', hashToVerify);
+
+        // Switch to verify tab
+        switchTab('home');
+
+        // Wait a moment for the page to load, then trigger verification
+        setTimeout(async () => {
+            const verifyInput = document.getElementById('verifyInput');
+            if (verifyInput) {
+                verifyInput.value = hashToVerify;
+                // Trigger verification
+                await verifyCertificate();
+                showToast('Certificate verification started from QR code', 'info');
+            }
+        }, 500);
+
+        // Clean URL without reloading (remove hash parameter)
+        const cleanUrl = window.location.origin + window.location.pathname;
+        window.history.replaceState({}, document.title, cleanUrl);
+    }
 }
 
 function loadABI() {
@@ -183,15 +217,37 @@ function generateQRCode(containerId, text) {
 
     try {
         // Use qrcode-generator library
+        // Type 0 = auto-detect, 'M' = medium error correction
         const qr = qrcode(0, 'M');
         qr.addData(text);
         qr.make();
 
-        // Replace container content with QR code
-        container.innerHTML = qr.createImgTag(3, 0);
+        // Create QR code with larger cell size (4) and margin (4) for better scanning
+        // Also set explicit styling for visibility
+        const img = qr.createImgTag(4, 4);
+        container.innerHTML = img;
+
+        // Style the generated image for full container fit
+        const imgEl = container.querySelector('img');
+        if (imgEl) {
+            imgEl.style.width = '100%';
+            imgEl.style.height = '100%';
+            imgEl.style.objectFit = 'contain';
+        }
     } catch (e) {
         console.error('QR Code generation failed:', e);
     }
+}
+
+// Generate QR Code with verification URL
+function generateVerificationQRCode(containerId, certificateHash) {
+    if (!certificateHash) return;
+
+    // Create verification URL that auto-verifies when scanned
+    const verificationUrl = `https://eniad-cert.vercel.app/?hash=${certificateHash}`;
+
+    console.log('📱 QR Code URL:', verificationUrl);
+    generateQRCode(containerId, verificationUrl);
 }
 
 // =============================================================================
@@ -915,6 +971,9 @@ async function verifyCertificate() {
         document.getElementById('modalCertYear').textContent = cert.year.toString();
         document.getElementById('modalCertHash').textContent = hash;
 
+        // Generate QR code for verification modal
+        generateVerificationQRCode('modalQRCode', hash);
+
         // Show success modal
         modalResult.classList.remove('hidden');
         openVerificationModal();
@@ -1004,6 +1063,9 @@ async function issueCertificate(e) {
         document.getElementById('previewYear').textContent = year;
         document.getElementById('previewIds').textContent = `${cni} / ${apogee}`;
         document.getElementById('previewHash').textContent = hash;
+
+        // Generate QR code with verification URL
+        generateVerificationQRCode('previewQRCode', hash);
 
         // Hide placeholder and show actual preview
         const placeholder = document.getElementById('diplomaPlaceholder');

@@ -185,24 +185,16 @@
             border: 3px solid rgba(201, 162, 39, 0.4);
         }
 
-        /* Subtle 3D tilt animation - no full spin */
+        /* Slow bouncing animation */
         @keyframes subtleTilt {
 
             0%,
             100% {
-                transform: translateY(0px) rotateX(2deg) rotateY(-8deg) rotateZ(0deg);
-            }
-
-            25% {
-                transform: translateY(-15px) rotateX(-3deg) rotateY(8deg) rotateZ(1deg);
+                transform: translateY(0px) rotateX(2deg) rotateY(-5deg);
             }
 
             50% {
-                transform: translateY(-8px) rotateX(4deg) rotateY(-5deg) rotateZ(-1deg);
-            }
-
-            75% {
-                transform: translateY(-20px) rotateX(-2deg) rotateY(10deg) rotateZ(0.5deg);
+                transform: translateY(-25px) rotateX(2deg) rotateY(-5deg);
             }
         }
 
@@ -446,18 +438,9 @@
         }
 
         /* Shimmer effect on demo certificate */
+        /* Shimmer effect - disabled */
         .shimmer {
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg,
-                    transparent,
-                    rgba(255, 255, 255, 0.1),
-                    transparent);
-            animation: shimmer 3s infinite;
-            pointer-events: none;
+            display: none;
         }
 
         @keyframes shimmer {
@@ -712,9 +695,9 @@
                                     <!-- Right: QR Code -->
                                     <div class="flex flex-col items-center justify-center">
                                         <div id="demo3dQRCode"
-                                            class="w-14 h-14 bg-white rounded p-1 flex items-center justify-center"
-                                            style="border: 1px solid #c9a227;">
-                                            <ion-icon name="qr-code" class="text-2xl"
+                                            class="w-20 h-20 bg-white rounded p-1 flex items-center justify-center"
+                                            style="border: 2px solid #c9a227;">
+                                            <ion-icon name="qr-code" class="text-3xl"
                                                 style="color: #1e3a5f;"></ion-icon>
                                         </div>
                                         <p class="text-[5px] mt-1 uppercase" style="color: #c9a227;">Scan to Verify</p>
