@@ -104,13 +104,179 @@ function setupEventListeners() {
         window.ethereum.on('chainChanged', handleChainChanged);
     }
 
-    // Initial Checks (These were not in the original setupEventListeners, adding them here as per the provided edit)
-    // Note: checkNetwork, checkIfWalletIsConnected, updateStats, setupStatsObserver are not defined in the original document.
-    // Assuming they are meant to be called here and will be defined elsewhere or are placeholders.
-    // await checkNetwork(); // This is already called in connectWallet, might be redundant or needs context.
-    // await checkIfWalletIsConnected(); // This seems to be a new function.
-    // await updateStats(); // This seems to be a new function.
-    // setupStatsObserver(); // This seems to be a new function.
+    // ==========================================================
+    // REAL-TIME FORM BINDING FOR CERTIFICATE PREVIEW
+    // ==========================================================
+    setupRealTimeFormBinding();
+
+    // ==========================================================
+    // ADMIN FORM EVENT LISTENERS
+    // ==========================================================
+    document.getElementById('revokeForm')?.addEventListener('submit', revokeCertificateHandler);
+    document.getElementById('updateForm')?.addEventListener('submit', updateCertificateHandler);
+}
+
+// Real-time form binding function
+function setupRealTimeFormBinding() {
+    const nameInput = document.getElementById('studentName');
+    const cniInput = document.getElementById('studentCni');
+    const apogeeInput = document.getElementById('studentApogee');
+    const majorSelect = document.getElementById('majorSelect');
+    const yearInput = document.getElementById('gradYear');
+    const degreeTypeSelect = document.getElementById('degreeType');
+    const issuerInput = document.getElementById('issuerName');
+
+    // Preview elements
+    const previewName = document.getElementById('previewName');
+    const previewMajor = document.getElementById('previewMajor');
+    const previewYear = document.getElementById('previewYear');
+    const previewIds = document.getElementById('previewIds');
+    const previewDegreeType = document.getElementById('previewDegreeType');
+    const previewIssuer = document.getElementById('previewIssuer');
+    const diplomaPlaceholder = document.getElementById('diplomaPlaceholder');
+    const diplomaPreview = document.getElementById('diplomaPreview');
+
+    // Update functions
+    function updatePreview() {
+        const name = nameInput?.value.trim() || '_____________________';
+        const cni = cniInput?.value.trim() || '______';
+        const apogee = apogeeInput?.value.trim() || '______';
+        const major = majorSelect?.value || '_______';
+        const year = yearInput?.value || '____';
+        const degreeType = degreeTypeSelect?.value || 'Diploma';
+        const issuer = issuerInput?.value.trim() || 'MAJDOUBI ILYAS';
+
+        if (previewName) previewName.textContent = name;
+        if (previewMajor) previewMajor.textContent = major || '_______';
+        if (previewYear) previewYear.textContent = year;
+        if (previewIds) previewIds.textContent = `${cni} / ${apogee}`;
+        if (previewDegreeType) previewDegreeType.textContent = degreeType;
+        if (previewIssuer) previewIssuer.textContent = issuer.toUpperCase();
+
+        // Show/hide based on content
+        const hasContent = nameInput?.value.trim() || cniInput?.value.trim() ||
+            apogeeInput?.value.trim() || majorSelect?.value;
+
+        if (hasContent && diplomaPlaceholder && diplomaPreview) {
+            diplomaPlaceholder.classList.add('hidden');
+            diplomaPreview.classList.remove('hidden');
+        }
+    }
+
+    // Add event listeners
+    if (nameInput) nameInput.addEventListener('input', updatePreview);
+    if (cniInput) cniInput.addEventListener('input', updatePreview);
+    if (apogeeInput) apogeeInput.addEventListener('input', updatePreview);
+    if (majorSelect) majorSelect.addEventListener('change', updatePreview);
+    if (yearInput) yearInput.addEventListener('input', updatePreview);
+    if (degreeTypeSelect) degreeTypeSelect.addEventListener('change', updatePreview);
+    if (issuerInput) issuerInput.addEventListener('input', updatePreview);
+
+    // Initial update
+    updatePreview();
+}
+
+// Generate QR Code function
+function generateQRCode(containerId, text) {
+    const container = document.getElementById(containerId);
+    if (!container || !text) return;
+
+    try {
+        // Use qrcode-generator library
+        const qr = qrcode(0, 'M');
+        qr.addData(text);
+        qr.make();
+
+        // Replace container content with QR code
+        container.innerHTML = qr.createImgTag(3, 0);
+    } catch (e) {
+        console.error('QR Code generation failed:', e);
+    }
+}
+
+// =============================================================================
+// STATISTICS DASHBOARD
+// =============================================================================
+
+async function refreshStatistics() {
+    try {
+        // Update UI to show loading
+        const elements = [
+            'statsTotalCerts', 'statsDiploma', 'statsMaster', 'statsPhd', 'statsAchievement',
+            'statsIRSI', 'statsROC', 'statsAI', 'statsGI'
+        ];
+        elements.forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.textContent = '...';
+        });
+
+        // Fetch stats from smart contract
+        // Note: This assumes the contract has getStatistics() or similar functions
+        // The user will need to update the smart contract to support these calls
+
+        if (certificateContract) {
+            // Try to call getTotalCertificates if available
+            try {
+                const total = await certificateContract.getTotalCertificates();
+                document.getElementById('statsTotalCerts').textContent = total.toString();
+            } catch (e) {
+                document.getElementById('statsTotalCerts').textContent = 'N/A';
+            }
+
+            // Try to get certificates by degree type
+            try {
+                const diplomaCount = await certificateContract.getCertificatesByDegreeType('Diploma');
+                const masterCount = await certificateContract.getCertificatesByDegreeType('Master');
+                const phdCount = await certificateContract.getCertificatesByDegreeType('PhD');
+                const achievementCount = await certificateContract.getCertificatesByDegreeType('Achievement');
+
+                document.getElementById('statsDiploma').textContent = diplomaCount.toString();
+                document.getElementById('statsMaster').textContent = masterCount.toString();
+                document.getElementById('statsPhd').textContent = phdCount.toString();
+                document.getElementById('statsAchievement').textContent = achievementCount.toString();
+            } catch (e) {
+                document.getElementById('statsDiploma').textContent = 'N/A';
+                document.getElementById('statsMaster').textContent = 'N/A';
+                document.getElementById('statsPhd').textContent = 'N/A';
+                document.getElementById('statsAchievement').textContent = 'N/A';
+            }
+
+            // Try to get certificates by major
+            try {
+                const irsiCount = await certificateContract.getCertificatesByMajor('IRSI');
+                const rocCount = await certificateContract.getCertificatesByMajor('ROC');
+                const aiCount = await certificateContract.getCertificatesByMajor('AI');
+                const giCount = await certificateContract.getCertificatesByMajor('GI');
+
+                document.getElementById('statsIRSI').textContent = irsiCount.toString();
+                document.getElementById('statsROC').textContent = rocCount.toString();
+                document.getElementById('statsAI').textContent = aiCount.toString();
+                document.getElementById('statsGI').textContent = giCount.toString();
+            } catch (e) {
+                document.getElementById('statsIRSI').textContent = 'N/A';
+                document.getElementById('statsROC').textContent = 'N/A';
+                document.getElementById('statsAI').textContent = 'N/A';
+                document.getElementById('statsGI').textContent = 'N/A';
+            }
+        } else {
+            // Contract not connected
+            elements.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = 'N/A';
+            });
+            showToast('Connect wallet to view statistics', 'warning');
+        }
+
+        // Update last refresh time
+        const lastUpdate = document.getElementById('statsLastUpdate');
+        if (lastUpdate) {
+            lastUpdate.textContent = `Last updated: ${new Date().toLocaleTimeString()}`;
+        }
+
+    } catch (error) {
+        console.error('Error refreshing statistics:', error);
+        showToast('Failed to fetch statistics', 'error');
+    }
 }
 
 // =============================================================================
@@ -167,6 +333,143 @@ function switchTab(tabName) {
     }
     if (document.getElementById('pageSubtitle')) {
         document.getElementById('pageSubtitle').textContent = subtitles[tabName] || '';
+    }
+}
+
+// =============================================================================
+// ADMIN TAB NAVIGATION
+// =============================================================================
+
+function switchAdminTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.admin-tab').forEach(tab => {
+        tab.classList.remove('active');
+    });
+    document.getElementById(`adminTab${tabName.charAt(0).toUpperCase() + tabName.slice(1)}`)?.classList.add('active');
+
+    // Hide all panels
+    document.querySelectorAll('.admin-panel').forEach(panel => {
+        panel.classList.add('hidden');
+    });
+
+    // Show selected panel
+    const targetPanel = document.getElementById(`admin${tabName.charAt(0).toUpperCase() + tabName.slice(1)}Panel`);
+    if (targetPanel) {
+        targetPanel.classList.remove('hidden');
+    }
+}
+
+// Revoke Certificate
+async function revokeCertificateHandler(e) {
+    e.preventDefault();
+
+    const hash = document.getElementById('revokeHash').value.trim();
+    const reason = document.getElementById('revokeReason').value.trim();
+    const resultDiv = document.getElementById('revokeResult');
+    const msgSpan = document.getElementById('revokeMsg');
+
+    if (!hash) {
+        showToast('Please enter a certificate hash', 'error');
+        return;
+    }
+
+    resultDiv.classList.remove('hidden');
+    msgSpan.textContent = 'Revoking certificate...';
+
+    try {
+        // Call smart contract revoke function
+        const tx = await certificateContract.revokeCertificate(hash);
+        await tx.wait();
+
+        msgSpan.textContent = '✓ Certificate revoked successfully!';
+        resultDiv.style.background = 'rgba(34, 197, 94, 0.1)';
+        resultDiv.style.borderColor = '#22c55e';
+        resultDiv.style.color = '#22c55e';
+        showToast('Certificate revoked successfully', 'success');
+
+        // Clear form
+        document.getElementById('revokeHash').value = '';
+        document.getElementById('revokeReason').value = '';
+    } catch (error) {
+        console.error('Revoke error:', error);
+        msgSpan.textContent = `Error: ${error.reason || error.message || 'Failed to revoke'}`;
+        showToast('Failed to revoke certificate', 'error');
+    }
+}
+
+// Lookup Certificate for Update
+async function lookupCertificateForUpdate() {
+    const hash = document.getElementById('updateLookupHash').value.trim();
+    const updateForm = document.getElementById('updateForm');
+    const resultDiv = document.getElementById('updateResult');
+    const msgSpan = document.getElementById('updateMsg');
+
+    if (!hash) {
+        showToast('Please enter a certificate hash', 'error');
+        return;
+    }
+
+    resultDiv.classList.remove('hidden');
+    msgSpan.textContent = 'Looking up certificate...';
+
+    try {
+        // Call smart contract to get certificate data
+        const certData = await certificateContract.getCertificate(hash);
+
+        if (!certData || !certData.studentName) {
+            msgSpan.textContent = 'Certificate not found';
+            showToast('Certificate not found', 'error');
+            return;
+        }
+
+        // Populate update form
+        document.getElementById('updateName').value = certData.studentName;
+        document.getElementById('updateMajor').value = certData.degree || 'IRSI';
+        document.getElementById('updateYear').value = certData.graduationYear?.toString() || '2025';
+
+        // Show edit form
+        updateForm.classList.remove('hidden');
+        resultDiv.classList.add('hidden');
+        showToast('Certificate found! You can now edit.', 'success');
+    } catch (error) {
+        console.error('Lookup error:', error);
+        msgSpan.textContent = `Error: ${error.reason || error.message || 'Failed to lookup'}`;
+        showToast('Failed to lookup certificate', 'error');
+    }
+}
+
+// Update Certificate
+async function updateCertificateHandler(e) {
+    e.preventDefault();
+
+    const hash = document.getElementById('updateLookupHash').value.trim();
+    const name = document.getElementById('updateName').value.trim();
+    const major = document.getElementById('updateMajor').value;
+    const year = document.getElementById('updateYear').value;
+    const resultDiv = document.getElementById('updateResult');
+    const msgSpan = document.getElementById('updateMsg');
+
+    resultDiv.classList.remove('hidden');
+    msgSpan.textContent = 'Updating certificate...';
+
+    try {
+        // Call smart contract update function
+        const tx = await certificateContract.updateCertificate(hash, name, major, parseInt(year));
+        await tx.wait();
+
+        msgSpan.textContent = '✓ Certificate updated successfully!';
+        resultDiv.style.background = 'rgba(34, 197, 94, 0.1)';
+        resultDiv.style.borderColor = '#22c55e';
+        resultDiv.style.color = '#22c55e';
+        showToast('Certificate updated successfully', 'success');
+
+        // Reset form
+        document.getElementById('updateForm').classList.add('hidden');
+        document.getElementById('updateLookupHash').value = '';
+    } catch (error) {
+        console.error('Update error:', error);
+        msgSpan.textContent = `Error: ${error.reason || error.message || 'Failed to update'}`;
+        showToast('Failed to update certificate', 'error');
     }
 }
 
@@ -484,8 +787,43 @@ async function initContract() {
 
 
 // =============================================================================
-// CERTIFICATE VERIFICATION
+// CERTIFICATE VERIFICATION (with Modal Popup)
 // =============================================================================
+
+// Modal Control Functions
+function openVerificationModal() {
+    const modal = document.getElementById('certificateModal');
+    if (modal) modal.classList.add('active');
+    document.body.style.overflow = 'hidden'; // Prevent background scroll
+}
+
+function closeVerificationModal() {
+    const modal = document.getElementById('certificateModal');
+    if (modal) modal.classList.remove('active');
+    document.body.style.overflow = ''; // Restore scroll
+
+    // Reset modal states after close animation
+    setTimeout(() => {
+        document.getElementById('modalVerificationResult')?.classList.add('hidden');
+        document.getElementById('modalVerificationRevoked')?.classList.add('hidden');
+        document.getElementById('modalVerificationError')?.classList.add('hidden');
+    }, 300);
+}
+
+function closeModalOnOverlay(event) {
+    if (event.target.id === 'certificateModal') {
+        closeVerificationModal();
+    }
+}
+
+function copyModalHash() {
+    const hashText = document.getElementById('modalCertHash').textContent;
+    navigator.clipboard.writeText(hashText).then(() => {
+        showToast('Hash copied to clipboard!', 'success');
+    }).catch(err => {
+        console.error('Failed to copy: ', err);
+    });
+}
 
 async function verifyCertificate() {
     const input = document.getElementById('verifyInput').value.trim();
@@ -495,14 +833,14 @@ async function verifyCertificate() {
     }
 
     const verifyBtn = document.getElementById('verifyBtn');
-    const resultCard = document.getElementById('verificationResult');
-    const revokedCard = document.getElementById('verificationRevoked');
-    const errorCard = document.getElementById('verificationError');
+    const modalResult = document.getElementById('modalVerificationResult');
+    const modalRevoked = document.getElementById('modalVerificationRevoked');
+    const modalError = document.getElementById('modalVerificationError');
 
-    // Hide all results
-    resultCard.classList.add('hidden');
-    revokedCard.classList.add('hidden');
-    errorCard.classList.add('hidden');
+    // Hide all modal states
+    modalResult.classList.add('hidden');
+    modalRevoked.classList.add('hidden');
+    modalError.classList.add('hidden');
 
     setButtonLoading(verifyBtn, true);
 
@@ -530,29 +868,25 @@ async function verifyCertificate() {
         }
 
         if (!exists || cert.id.toNumber() === 0) {
-            // Show container for not-found
-            const container = document.getElementById('verificationContainer');
-            if (container) container.classList.remove('hidden');
-
-            document.getElementById('errorMessage').textContent = 'No certificate found with this Hash or ID.';
-            errorCard.classList.remove('hidden');
+            // Show modal with not-found state
+            document.getElementById('modalErrorMessage').textContent = 'No certificate found with this Hash or ID.';
+            modalError.classList.remove('hidden');
+            openVerificationModal();
             showToast('Certificate not found', 'error');
             return;
         }
 
         // Check if revoked
         if (!cert.isValid) {
-            // Show container for revoked
-            const container = document.getElementById('verificationContainer');
-            if (container) container.classList.remove('hidden');
-
-            revokedCard.classList.remove('hidden');
+            // Show modal with revoked state
+            modalRevoked.classList.remove('hidden');
+            openVerificationModal();
             showToast('Certificate has been revoked', 'warning');
             return;
         }
 
-        // Populate success UI (Diploma Style)
-        document.getElementById('verifyCertName').textContent = cert.studentName;
+        // Populate modal success UI (Diploma Style)
+        document.getElementById('modalCertName').textContent = cert.studentName;
 
         // Extract Major from "Engineering Degree in [Major]"
         const diplomaText = cert.diploma;
@@ -560,45 +894,34 @@ async function verifyCertificate() {
         if (diplomaText.includes("Engineering Degree in ")) {
             major = diplomaText.replace("Engineering Degree in ", "");
         }
-        document.getElementById('verifyCertMajor').textContent = major;
+        document.getElementById('modalCertMajor').textContent = major;
 
-        // Combine IDs if stored that way or just show raw
-        // Handle potentially different formats. If it contains "|", assume it's the new format.
+        // Handle ID format
         let displayIds = cert.studentId;
         if (displayIds.includes("|")) {
             displayIds = displayIds.replace("|", "/");
         }
-        document.getElementById('verifyCertIds').textContent = displayIds;
+        document.getElementById('modalCertIds').textContent = displayIds;
 
-        document.getElementById('verifyCertYear').textContent = cert.year.toString();
-        document.getElementById('verifyCertHash').textContent = hash;
+        document.getElementById('modalCertYear').textContent = cert.year.toString();
+        document.getElementById('modalCertHash').textContent = hash;
 
-        // Show the container first, then the result card
-        const container = document.getElementById('verificationContainer');
-        if (container) container.classList.remove('hidden');
-
-        // Show Result
-        const diplomaWrapper = document.getElementById('verificationResult');
-        diplomaWrapper.classList.remove('hidden');
-        diplomaWrapper.scrollIntoView({ behavior: 'smooth' });
+        // Show success modal
+        modalResult.classList.remove('hidden');
+        openVerificationModal();
 
         showToast('Certificate verified successfully!', 'success');
 
     } catch (error) {
         console.error('Verification error:', error);
-        document.getElementById('errorMessage').textContent = error.reason || error.message || 'Verification failed';
+        document.getElementById('modalErrorMessage').textContent = error.reason || error.message || 'Verification failed';
 
-        // Show container for error too
-        const container = document.getElementById('verificationContainer');
-        if (container) container.classList.remove('hidden');
-
-        errorCard.classList.remove('hidden');
+        // Show modal with error state
+        modalError.classList.remove('hidden');
+        openVerificationModal();
         showToast('Verification failed', 'error');
     } finally {
-        setButtonLoading(verifyBtn, false, `
-            <ion-icon name="search-outline"></ion-icon>
-            Verify
-        `);
+        setButtonLoading(verifyBtn, false, `Verify`);
     }
 }
 
@@ -728,6 +1051,12 @@ function downloadPDF(elementId) {
 window.switchTab = switchTab;
 window.downloadPDF = downloadPDF;
 window.copyHash = copyHash;
+window.closeVerificationModal = closeVerificationModal;
+window.closeModalOnOverlay = closeModalOnOverlay;
+window.copyModalHash = copyModalHash;
+window.switchAdminTab = switchAdminTab;
+window.lookupCertificateForUpdate = lookupCertificateForUpdate;
+window.refreshStatistics = refreshStatistics;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', init);

@@ -34,6 +34,7 @@
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
 
     <!-- Icons -->
     <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
@@ -73,6 +74,348 @@
 
         .toast-enter {
             animation: slideIn 0.3s ease forwards;
+        }
+
+        /* 3D Certificate Demo Styles */
+        .certificate-3d-container {
+            perspective: 1000px;
+            width: 100%;
+            height: 400px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+        }
+
+        .certificate-3d {
+            width: 320px;
+            height: 420px;
+            position: relative;
+            transform-style: preserve-3d;
+            animation: float3d 8s ease-in-out infinite, rotate3d 20s linear infinite;
+        }
+
+        .certificate-3d-face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 8px;
+            box-shadow: 0 25px 50px -12px rgba(201, 162, 39, 0.35),
+                0 0 80px rgba(184, 150, 43, 0.15);
+        }
+
+        .certificate-3d-front {
+            background: linear-gradient(145deg, #fffef7 0%, #faf6e8 100%);
+            border: 4px solid #c9a227;
+            outline: 2px solid #1e3a5f;
+            outline-offset: 4px;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .certificate-3d-back {
+            background: linear-gradient(145deg, #1e3a5f 0%, #2d4a6f 100%);
+            transform: rotateY(180deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border: 3px solid rgba(99, 102, 241, 0.3);
+        }
+
+        @keyframes float3d {
+
+            0%,
+            100% {
+                transform: translateY(0px) rotateX(5deg) rotateY(15deg);
+            }
+
+            25% {
+                transform: translateY(-20px) rotateX(10deg) rotateY(20deg);
+            }
+
+            50% {
+                transform: translateY(-10px) rotateX(-5deg) rotateY(25deg);
+            }
+
+            75% {
+                transform: translateY(-25px) rotateX(8deg) rotateY(18deg);
+            }
+        }
+
+        @keyframes rotate3d {
+            0% {
+                transform: translateY(-10px) rotateY(0deg) rotateX(5deg);
+            }
+
+            100% {
+                transform: translateY(-10px) rotateY(360deg) rotateX(5deg);
+            }
+        }
+
+        .certificate-3d:hover {
+            animation-play-state: paused;
+        }
+
+        /* Floating particles */
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(135deg, #c9a227, #ffd700);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: floatParticle 6s ease-in-out infinite;
+        }
+
+        .particle:nth-child(1) {
+            top: 10%;
+            left: 10%;
+            animation-delay: 0s;
+        }
+
+        .particle:nth-child(2) {
+            top: 20%;
+            right: 15%;
+            animation-delay: 1s;
+        }
+
+        .particle:nth-child(3) {
+            bottom: 25%;
+            left: 20%;
+            animation-delay: 2s;
+        }
+
+        .particle:nth-child(4) {
+            bottom: 15%;
+            right: 10%;
+            animation-delay: 3s;
+        }
+
+        .particle:nth-child(5) {
+            top: 50%;
+            left: 5%;
+            animation-delay: 4s;
+        }
+
+        @keyframes floatParticle {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+                opacity: 0.6;
+            }
+
+            25% {
+                transform: translate(10px, -15px) scale(1.2);
+                opacity: 0.8;
+            }
+
+            50% {
+                transform: translate(-5px, -25px) scale(0.8);
+                opacity: 0.4;
+            }
+
+            75% {
+                transform: translate(15px, -10px) scale(1.1);
+                opacity: 0.7;
+            }
+        }
+
+        /* Glowing ring around certificate */
+        .glow-ring {
+            position: absolute;
+            width: 380px;
+            height: 500px;
+            border-radius: 12px;
+            background: transparent;
+            border: 2px solid transparent;
+            background-image: linear-gradient(rgba(15, 23, 42, 0.8), rgba(15, 23, 42, 0.8)),
+                linear-gradient(135deg, #c9a227 0%, #ffd700 50%, #c9a227 100%);
+            background-origin: border-box;
+            background-clip: padding-box, border-box;
+            animation: glowPulse 3s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes glowPulse {
+
+            0%,
+            100% {
+                box-shadow: 0 0 20px rgba(201, 162, 39, 0.3), 0 0 40px rgba(255, 215, 0, 0.2);
+            }
+
+            50% {
+                box-shadow: 0 0 40px rgba(201, 162, 39, 0.5), 0 0 80px rgba(255, 215, 0, 0.3);
+            }
+        }
+
+        /* Signature styles */
+        .signature-text {
+            font-family: 'Brush Script MT', 'Segoe Script', cursive;
+            font-size: 18px;
+            color: #1e3a5f;
+        }
+
+        /* Hash footer box */
+        .hash-footer {
+            background: linear-gradient(135deg, #faf6e8 0%, #f5ecd7 100%);
+            border: 2px solid #c9a227;
+            border-radius: 8px;
+            padding: 8px 12px;
+        }
+
+        /* Floating particles - gold theme */
+        .particle {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: linear-gradient(135deg, #c9a227, #ffd700);
+            border-radius: 50%;
+            opacity: 0.6;
+            animation: floatParticle 6s ease-in-out infinite;
+        }
+
+        /* Admin Tab Styles */
+        .admin-tab {
+            color: #9ca3af;
+            background: transparent;
+        }
+
+        .admin-tab:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .admin-tab.active {
+            color: #ffffff;
+            background: linear-gradient(135deg, #c9a227, #b8962b);
+            box-shadow: 0 4px 15px rgba(201, 162, 39, 0.3);
+        }
+
+        .admin-panel {
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        /* Modal Styles */
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 100;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .modal-content {
+            background: linear-gradient(145deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: scale(0.8) translateY(50px);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 25px 100px rgba(99, 102, 241, 0.3),
+                0 0 0 1px rgba(255, 255, 255, 0.05);
+        }
+
+        .modal-overlay.active .modal-content {
+            transform: scale(1) translateY(0);
+        }
+
+        .modal-close-btn {
+            position: absolute;
+            top: -12px;
+            right: -12px;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #ef4444, #dc2626);
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            z-index: 10;
+        }
+
+        .modal-close-btn:hover {
+            transform: scale(1.1) rotate(90deg);
+            background: linear-gradient(135deg, #dc2626, #b91c1c);
+        }
+
+        /* Certificate badge animation */
+        .verified-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #10b981, #059669);
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+            animation: badgePop 0.5s ease;
+        }
+
+        @keyframes badgePop {
+            0% {
+                transform: scale(0);
+                opacity: 0;
+            }
+
+            50% {
+                transform: scale(1.2);
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        /* Shimmer effect on demo certificate */
+        .shimmer {
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.1),
+                    transparent);
+            animation: shimmer 3s infinite;
+            pointer-events: none;
+        }
+
+        @keyframes shimmer {
+            0% {
+                left: -100%;
+            }
+
+            50%,
+            100% {
+                left: 100%;
+            }
         }
     </style>
 </head>
@@ -229,101 +572,135 @@
                     </div>
                 </div>
 
-                <!-- Visual / Results Container -->
+                <!-- 3D Certificate Demo Container -->
                 <div class="relative">
-                    <!-- Result Area Overlay or Inline -->
-                    <div id="verificationContainer" class="hidden glass p-1 rounded-2xl shadow-2xl relative z-20">
+                    <div class="certificate-3d-container">
+                        <!-- Floating Particles -->
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
+                        <div class="particle"></div>
 
-                        <!-- Success: Diploma -->
-                        <div id="verificationResult"
-                            class="hidden animate-fade-in-up bg-white rounded-xl overflow-hidden text-gray-900">
-                            <!-- Mini Diploma View -->
-                            <div id="verifyDiploma" class="p-6 md:p-8 border-8 border-double border-gray-100 relative">
-                                <div
-                                    class="absolute top-0 left-0 w-full h-full border-[12px] border-indigo-900/5 pointer-events-none">
+                        <!-- Glowing Ring -->
+                        <div class="glow-ring"></div>
+
+                        <!-- 3D Certificate -->
+                        <div class="certificate-3d">
+                            <!-- Front Face -->
+                            <div class="certificate-3d-face certificate-3d-front">
+                                <div class="shimmer"></div>
+
+                                <!-- Header -->
+                                <div class="text-center">
+                                    <!-- Ribbon Icon -->
+                                    <div class="flex justify-center mb-1">
+                                        <svg width="32" height="32" viewBox="0 0 24 24" fill="none"
+                                            class="text-amber-600">
+                                            <circle cx="12" cy="8" r="6" stroke="#c9a227" stroke-width="2"
+                                                fill="#ffd700" />
+                                            <path d="M8 14L6 22L12 18L18 22L16 14" stroke="#c9a227" stroke-width="2"
+                                                fill="#c9a227" />
+                                        </svg>
+                                    </div>
+                                    <h1 class="text-xl font-serif font-bold tracking-widest" style="color: #1e3a5f;">
+                                        ENIAD</h1>
+                                    <p class="text-[0.5rem] font-semibold tracking-[0.1em] uppercase italic"
+                                        style="color: #c9a227;">
+                                        National School of Artificial Intelligence and Digitale
+                                    </p>
+                                    <p class="text-[0.6rem] italic mt-1"
+                                        style="color: #1e3a5f; font-family: Georgia, serif;">
+                                        Digital Certificate of Completion
+                                    </p>
                                 </div>
-                                <div class="text-center space-y-4">
-                                    <div class="flex items-center justify-center gap-2 text-indigo-900">
-                                        <ion-icon name="ribbon" class="text-2xl"></ion-icon>
-                                        <h1 class="font-serif font-bold text-xl tracking-wider">ENIAD</h1>
+
+                                <!-- Divider -->
+                                <div class="w-full h-0.5 my-2"
+                                    style="background: linear-gradient(90deg, transparent, #c9a227, transparent);">
+                                </div>
+
+                                <!-- Content -->
+                                <div class="text-center flex-1 flex flex-col justify-center">
+                                    <p class="text-[0.6rem]" style="color: #1e3a5f;">This certifies that</p>
+                                    <h2 id="demo3dName" class="text-lg font-serif italic font-bold py-1"
+                                        style="color: #1e3a5f; border-bottom: 1px solid #c9a227;">
+                                        Sample Student
+                                    </h2>
+                                    <p class="text-[0.55rem] mt-1" style="color: #1e3a5f;">has successfully completed
+                                        the requirements for the major in</p>
+                                    <h3 id="demo3dMajor" class="text-sm font-bold mt-1" style="color: #1e3a5f;">IRSI
+                                    </h3>
+
+                                    <!-- Year & ID -->
+                                    <div class="flex justify-center gap-4 mt-2 text-[0.5rem]" style="color: #c9a227;">
+                                        <span><strong style="color: #1e3a5f;">Year:</strong> <span
+                                                id="demo3dYear">2025</span></span>
+                                        <span><strong style="color: #1e3a5f;">ID:</strong> <span id="demo3dIds">CNI /
+                                                APOGEE</span></span>
                                     </div>
-                                    <div class="py-4 border-t border-b border-gray-100">
-                                        <p class="text-xs text-gray-500 font-serif italic">This certifies that</p>
-                                        <h2 id="verifyCertName"
-                                            class="text-xl md:text-2xl font-serif font-bold text-gray-900 my-1">Student
-                                            Name</h2>
-                                        <h3 id="verifyCertMajor" class="text-sm font-bold text-indigo-600">Engineering
-                                            Degree</h3>
-                                        <p class="text-[10px] text-gray-400 mt-2">ID: <span id="verifyCertIds">--</span>
-                                            | Year: <span id="verifyCertYear">--</span></p>
-                                    </div>
-                                    <!-- Signatures -->
-                                    <div class="flex justify-between items-end px-4 pt-2">
-                                        <div>
-                                            <div class="font-signature text-sm font-bold text-indigo-900">Majdoubi I.
-                                            </div>
-                                            <div
-                                                class="border-t border-gray-200 w-16 text-[8px] uppercase text-gray-400">
-                                                Issuer</div>
+                                </div>
+
+                                <!-- Signatures -->
+                                <div class="flex justify-between items-end px-2 mt-2">
+                                    <div class="text-center">
+                                        <!-- Hand-drawn signature style -->
+                                        <div class="h-6 flex items-end justify-center"
+                                            style="font-family: 'Brush Script MT', cursive; font-size: 14px; color: #1e3a5f;">
+                                            M. Ilyas
                                         </div>
-                                        <div>
-                                            <div class="font-signature text-sm font-bold text-indigo-900">El Hilali N.
-                                            </div>
-                                            <div
-                                                class="border-t border-gray-200 w-16 text-[8px] uppercase text-gray-400">
-                                                Director</div>
+                                        <div class="border-t w-16 text-[6px] uppercase pt-0.5"
+                                            style="border-color: #1e3a5f; color: #c9a227;">
+                                            <strong style="color: #1e3a5f;">MAJDOUBI ILYAS</strong><br />Issuer
                                         </div>
                                     </div>
+                                    <div class="text-center">
+                                        <div class="h-6 flex items-end justify-center"
+                                            style="font-family: 'Brush Script MT', cursive; font-size: 14px; color: #1e3a5f;">
+                                            N. Hilali
+                                        </div>
+                                        <div class="border-t w-16 text-[6px] uppercase pt-0.5"
+                                            style="border-color: #1e3a5f; color: #c9a227;">
+                                            <strong style="color: #1e3a5f;">EL HILALI NABIL</strong><br />School
+                                            Director
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Hash Footer -->
+                                <div class="mt-2 p-1.5 rounded text-center"
+                                    style="background: linear-gradient(135deg, #faf6e8 0%, #f5ecd7 100%); border: 1px solid #c9a227;">
+                                    <p class="text-[5px] uppercase tracking-wider mb-0.5" style="color: #1e3a5f;">
+                                        Certificate Hash:</p>
+                                    <code id="demo3dHash" class="text-[5px] break-all"
+                                        style="color: #c9a227;">0xd7e4c88366edddc5bf3bfb182aa3ec2e0b2892f15829f6cacdb0a1e3b1fd45ee</code>
                                 </div>
                             </div>
 
-                            <!-- Actions -->
-                            <div
-                                class="bg-gray-50 px-4 py-3 flex justify-between items-center border-t border-gray-100">
-                                <code id="verifyCertHash"
-                                    class="text-[10px] text-indigo-400 truncate max-w-[150px]">0x...</code>
-                                <div class="flex gap-2">
-                                    <button
-                                        onclick="document.getElementById('verificationContainer').classList.add('hidden')"
-                                        class="text-xs font-medium text-gray-500 hover:text-gray-800">Close</button>
-                                    <button onclick="downloadPDF('verifyDiploma')"
-                                        class="text-xs bg-indigo-600 text-white px-3 py-1.5 rounded hover:bg-indigo-500 flex items-center gap-1">
-                                        <ion-icon name="download-outline"></ion-icon> PDF
-                                    </button>
+                            <!-- Back Face -->
+                            <div class="certificate-3d-face certificate-3d-back">
+                                <div class="text-center p-4">
+                                    <!-- QR Code Placeholder -->
+                                    <div id="demo3dQRCode"
+                                        class="w-20 h-20 mx-auto mb-3 bg-white rounded p-2 flex items-center justify-center">
+                                        <ion-icon name="qr-code" class="text-4xl" style="color: #1e3a5f;"></ion-icon>
+                                    </div>
+                                    <p class="text-sm font-medium text-white">Blockchain Verified</p>
+                                    <p class="text-xs mt-2" style="color: #c9a227;">zkSync Era Testnet</p>
+                                    <div class="mt-3 flex items-center justify-center gap-2">
+                                        <ion-icon name="shield-checkmark" class="text-green-400"></ion-icon>
+                                        <span class="text-xs text-green-400">Tamper-proof</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
-
-                        <!-- Revoked/Error States -->
-                        <div id="verificationRevoked"
-                            class="hidden p-6 bg-red-500/10 text-red-500 text-center rounded-xl">
-                            <ion-icon name="alert-circle" class="text-4xl mb-2"></ion-icon>
-                            <h4 class="font-bold">Revoked</h4>
-                            <p class="text-xs opacity-80 mt-1">This certificate has been revoked.</p>
-                            <button onclick="document.getElementById('verificationContainer').classList.add('hidden')"
-                                class="mt-4 text-xs underline">Close</button>
-                        </div>
-
-                        <div id="verificationError"
-                            class="hidden p-6 bg-gray-800 text-gray-300 text-center rounded-xl border border-gray-700">
-                            <ion-icon name="search" class="text-4xl mb-2 text-gray-500"></ion-icon>
-                            <h4 class="font-bold">No Record Found</h4>
-                            <p class="text-xs opacity-80 mt-1" id="errorMessage">Check the ID/Hash and try again.</p>
-                            <button onclick="document.getElementById('verificationContainer').classList.add('hidden')"
-                                class="mt-4 text-xs underline">Close</button>
-                        </div>
                     </div>
 
-                    <!-- Placeholder Visual (When no result is shown) -->
-                    <div id="heroVisual"
-                        class="absolute inset-0 flex items-center justify-center opacity-30 pointer-events-none -z-10">
-                        <div
-                            class="relative w-64 h-80 bg-gradient-to-br from-indigo-500/20 to-purple-500/20 rounded-2xl transform rotate-6 border border-white/5">
-                        </div>
-                        <div
-                            class="absolute w-64 h-80 bg-gradient-to-br from-white/5 to-white/10 rounded-2xl backdrop-blur-sm border border-white/10 -rotate-3">
-                        </div>
-                    </div>
+                    <!-- Info Text -->
+                    <p class="text-center text-gray-500 text-sm mt-4">
+                        <ion-icon name="finger-print-outline" class="align-middle mr-1"></ion-icon>
+                        Immutable • Tamper-proof • Globally Verifiable
+                    </p>
                 </div>
             </div>
         </section>
@@ -341,7 +718,8 @@
                     <div class="glass p-6 rounded-2xl space-y-3">
                         <div
                             class="w-12 h-12 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-2xl">
-                            <ion-icon name="finger-print"></ion-icon></div>
+                            <ion-icon name="finger-print"></ion-icon>
+                        </div>
                         <h3 class="font-bold text-lg">Immutable</h3>
                         <p class="text-sm text-gray-400">Once issued, certificates cannot be altered or deleted without
                             a trace. The blockchain provides a permanent record.</p>
@@ -349,7 +727,8 @@
                     <div class="glass p-6 rounded-2xl space-y-3">
                         <div
                             class="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 text-2xl">
-                            <ion-icon name="globe"></ion-icon></div>
+                            <ion-icon name="globe"></ion-icon>
+                        </div>
                         <h3 class="font-bold text-lg">Global Verification</h3>
                         <p class="text-sm text-gray-400">Employers and institutions worldwide can instantly verify the
                             authenticity of a diploma using its unique hash.</p>
@@ -357,7 +736,8 @@
                     <div class="glass p-6 rounded-2xl space-y-3">
                         <div
                             class="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400 text-2xl">
-                            <ion-icon name="shield-checkmark"></ion-icon></div>
+                            <ion-icon name="shield-checkmark"></ion-icon>
+                        </div>
                         <h3 class="font-bold text-lg">Fraud Proof</h3>
                         <p class="text-sm text-gray-400">Cryptographic signatures prevent forgery. Only authorized
                             university admin wallets can issue valid certificates.</p>
@@ -387,141 +767,442 @@
 
         <!-- ================= ADMIN VIEW ================= -->
         <section id="adminView" class="view hidden">
-            <div class="max-w-5xl mx-auto grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="max-w-7xl mx-auto">
 
-                <!-- Issue Form -->
-                <div class="lg:col-span-1 glass p-6 rounded-3xl h-fit sticky top-28">
-                    <h3 class="text-xl font-bold mb-6 flex items-center gap-2">
-                        <ion-icon name="create-outline" class="text-indigo-400"></ion-icon>
-                        Issue New
+                <!-- ========== STATISTICS DASHBOARD ========== -->
+                <div class="glass p-6 rounded-2xl mb-6">
+                    <h3 class="text-lg font-bold mb-4 flex items-center gap-2" style="color: #c9a227;">
+                        <ion-icon name="stats-chart-outline"></ion-icon>
+                        Certificate Statistics
                     </h3>
 
-                    <form id="issueForm" class="space-y-4">
-                        <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1 ml-1">Full Name</label>
-                            <input type="text" id="studentName" required
-                                class="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 focus:border-transparent outline-none">
-                        </div>
-                        <div class="grid grid-cols-2 gap-3">
-                            <div>
-                                <label class="block text-xs font-medium text-gray-400 mb-1 ml-1">CNI</label>
-                                <input type="text" id="studentCni" required
-                                    class="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
-                            </div>
-                            <div>
-                                <label class="block text-xs font-medium text-gray-400 mb-1 ml-1">APOGEE</label>
-                                <input type="text" id="studentApogee" required
-                                    class="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                        <!-- Total Certificates -->
+                        <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                            <div class="flex items-center gap-3">
+                                <div class="w-12 h-12 rounded-lg flex items-center justify-center"
+                                    style="background: linear-gradient(135deg, #c9a227, #b8962b);">
+                                    <ion-icon name="ribbon-outline" class="text-2xl text-white"></ion-icon>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-gray-400 uppercase tracking-wide">Total Issued</p>
+                                    <p id="statsTotalCerts" class="text-2xl font-bold" style="color: #c9a227;">--</p>
+                                </div>
                             </div>
                         </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1 ml-1">Major</label>
-                            <select id="majorSelect" required
-                                class="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none appearance-none">
-                                <option value="" disabled selected>Select Major...</option>
-                                <option value="IRSI">IRSI</option>
-                                <option value="ROC">ROC</option>
-                                <option value="AI">AI</option>
-                                <option value="GI">GI</option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-xs font-medium text-gray-400 mb-1 ml-1">Graduation Year</label>
-                            <input type="number" id="gradYear" value="2025" min="2000" max="2100" required
-                                class="w-full bg-gray-900/50 border border-gray-700 rounded-xl px-4 py-2.5 focus:ring-2 focus:ring-indigo-500 outline-none">
+
+                        <!-- By Degree Type -->
+                        <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                            <p class="text-xs text-gray-400 uppercase tracking-wide mb-2">By Degree Type</p>
+                            <div class="space-y-1 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-300">Diploma</span>
+                                    <span id="statsDiploma" class="font-medium" style="color: #c9a227;">--</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-300">Master</span>
+                                    <span id="statsMaster" class="font-medium" style="color: #c9a227;">--</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-300">PhD</span>
+                                    <span id="statsPhd" class="font-medium" style="color: #c9a227;">--</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-300">Achievement</span>
+                                    <span id="statsAchievement" class="font-medium" style="color: #c9a227;">--</span>
+                                </div>
+                            </div>
                         </div>
 
-                        <button type="submit" id="issueBtn"
-                            class="w-full mt-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-500 hover:to-purple-500 text-white font-medium py-3 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2">
-                            <ion-icon name="paper-plane-outline"></ion-icon> Issue Certificate
-                        </button>
-                    </form>
+                        <!-- By Major -->
+                        <div class="bg-gray-800/50 rounded-xl p-4 border border-gray-700">
+                            <p class="text-xs text-gray-400 uppercase tracking-wide mb-2">By Major</p>
+                            <div class="space-y-1 text-sm">
+                                <div class="flex justify-between">
+                                    <span class="text-gray-300">IRSI</span>
+                                    <span id="statsIRSI" class="font-medium" style="color: #c9a227;">--</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-300">ROC</span>
+                                    <span id="statsROC" class="font-medium" style="color: #c9a227;">--</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-300">AI</span>
+                                    <span id="statsAI" class="font-medium" style="color: #c9a227;">--</span>
+                                </div>
+                                <div class="flex justify-between">
+                                    <span class="text-gray-300">GI</span>
+                                    <span id="statsGI" class="font-medium" style="color: #c9a227;">--</span>
+                                </div>
+                            </div>
+                        </div>
 
-                    <!-- Status Msg -->
-                    <div id="issueResult"
-                        class="hidden mt-4 p-3 rounded-xl bg-indigo-500/10 border border-indigo-500/20 text-center text-sm text-indigo-300">
-                        <span id="issueMsg">Processing...</span>
+                        <!-- Refresh Button -->
+                        <div
+                            class="bg-gray-800/50 rounded-xl p-4 border border-gray-700 flex flex-col justify-center items-center">
+                            <button onclick="refreshStatistics()"
+                                class="px-4 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-all hover:opacity-90"
+                                style="background: linear-gradient(135deg, #c9a227, #b8962b); color: #1e3a5f;">
+                                <ion-icon name="refresh-outline"></ion-icon> Refresh Stats
+                            </button>
+                            <p id="statsLastUpdate" class="text-xs text-gray-500 mt-2">Last updated: --</p>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Live Preview -->
-                <div class="lg:col-span-2 space-y-4">
-                    <div class="flex items-center justify-between">
-                        <h3 class="text-xl font-bold flex items-center gap-2">
-                            <ion-icon name="eye-outline" class="text-indigo-400"></ion-icon>
-                            Live Preview
-                        </h3>
-                        <span class="text-xs text-gray-500">Generated automatically</span>
-                    </div>
+                <!-- Admin Tab Navigation -->
+                <div class="flex gap-2 mb-6 p-1 bg-gray-800/50 rounded-2xl w-fit">
+                    <button onclick="switchAdminTab('issue')" id="adminTabIssue"
+                        class="admin-tab active px-6 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all">
+                        <ion-icon name="add-circle-outline"></ion-icon> Issue New
+                    </button>
+                    <button onclick="switchAdminTab('revoke')" id="adminTabRevoke"
+                        class="admin-tab px-6 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all">
+                        <ion-icon name="ban-outline"></ion-icon> Revoke
+                    </button>
+                    <button onclick="switchAdminTab('update')" id="adminTabUpdate"
+                        class="admin-tab px-6 py-2.5 rounded-xl text-sm font-medium flex items-center gap-2 transition-all">
+                        <ion-icon name="create-outline"></ion-icon> Update
+                    </button>
+                </div>
 
-                    <!-- Placeholder -->
-                    <div id="diplomaPlaceholder"
-                        class="border-2 border-dashed border-gray-700 rounded-3xl h-96 flex flex-col items-center justify-center text-gray-500 p-8 text-center">
-                        <ion-icon name="document-text-outline" class="text-4xl mb-4 opacity-50"></ion-icon>
-                        <p>Fill out the form to generate a preview</p>
-                    </div>
+                <div class="grid grid-cols-1 xl:grid-cols-5 gap-6">
 
-                    <!-- Actual Preview (Hidden initially) -->
-                    <div id="diplomaPreview" class="hidden">
-                        <div id="issuedDiploma"
-                            class="bg-white text-gray-900 p-10 rounded-xl shadow-xl border-8 border-double border-gray-200 relative overflow-hidden transform scale-95 origin-top">
-                            <!-- Diploma Structure -->
-                            <div
-                                class="absolute top-0 left-0 w-full h-full border-[12px] border-indigo-900/5 pointer-events-none">
-                            </div>
-                            <div class="text-center space-y-4 relative z-10">
-                                <div
-                                    class="w-16 h-16 bg-indigo-900 text-white rounded-full flex items-center justify-center mx-auto text-3xl shadow-lg">
-                                    <ion-icon name="school"></ion-icon>
-                                </div>
+                    <!-- Left Panel: Forms -->
+                    <div class="xl:col-span-2 space-y-4">
+
+                        <!-- ========== ISSUE PANEL ========== -->
+                        <div id="adminIssuePanel" class="admin-panel glass p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold mb-5 flex items-center gap-2" style="color: #c9a227;">
+                                <ion-icon name="ribbon-outline"></ion-icon>
+                                Issue New Certificate
+                            </h3>
+
+                            <form id="issueForm" class="space-y-4">
                                 <div>
-                                    <h1 class="text-3xl font-serif font-bold text-indigo-900 tracking-wider">ENIAD</h1>
-                                    <p class="text-[0.6rem] font-bold tracking-[0.2em] text-gray-500 mt-1 uppercase">
-                                        National School of AI & Digital</p>
+                                    <label class="block text-xs font-medium text-gray-400 mb-1.5">Full Name</label>
+                                    <input type="text" id="studentName" required placeholder="Enter student name"
+                                        class="w-full bg-gray-900/70 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 outline-none transition-all">
                                 </div>
-                                <div class="py-6 space-y-3">
-                                    <p class="text-base font-serif italic text-gray-600">This certifies that</p>
-                                    <h2 id="previewName"
-                                        class="text-3xl font-serif font-bold text-gray-900 border-b border-gray-200 inline-block pb-1 px-4">
-                                        Student Name</h2>
-                                    <p class="text-base font-serif italic text-gray-600">has completed requirements for
-                                    </p>
-                                    <h3 id="previewMajor" class="text-xl font-bold text-indigo-800">Engineering Degree
-                                    </h3>
-                                    <div class="flex justify-center gap-6 text-xs text-gray-600 font-mono mt-2">
-                                        <div><span class="text-gray-400 mr-2">Year:</span><span
-                                                id="previewYear">2025</span></div>
-                                        <div><span class="text-gray-400 mr-2">ID:</span><span id="previewIds">---</span>
-                                        </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-400 mb-1.5">CNI</label>
+                                        <input type="text" id="studentCni" required placeholder="CNI Number"
+                                            class="w-full bg-gray-900/70 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 outline-none transition-all">
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-400 mb-1.5">APOGEE</label>
+                                        <input type="text" id="studentApogee" required placeholder="APOGEE Code"
+                                            class="w-full bg-gray-900/70 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 outline-none transition-all">
                                     </div>
                                 </div>
-                                <div class="flex justify-between items-end pt-8 px-4">
-                                    <div class="text-center">
-                                        <div class="font-serif font-bold text-indigo-900">Majdoubi I.</div>
-                                        <div
-                                            class="border-t border-gray-300 w-24 mx-auto text-[0.6rem] uppercase tracking-widest text-gray-500">
-                                            Issuer</div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-400 mb-1.5">Major</label>
+                                        <select id="majorSelect" required
+                                            class="w-full bg-gray-900/70 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 outline-none appearance-none transition-all">
+                                            <option value="" disabled selected>Select...</option>
+                                            <option value="IRSI">IRSI</option>
+                                            <option value="ROC">ROC</option>
+                                            <option value="AI">AI</option>
+                                            <option value="GI">GI</option>
+                                        </select>
                                     </div>
-                                    <div class="text-center">
-                                        <div class="font-serif font-bold text-indigo-900">El Hilali N.</div>
-                                        <div
-                                            class="border-t border-gray-300 w-24 mx-auto text-[0.6rem] uppercase tracking-widest text-gray-500">
-                                            Director</div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-400 mb-1.5">Year</label>
+                                        <input type="number" id="gradYear" value="2025" min="2000" max="2100" required
+                                            class="w-full bg-gray-900/70 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 outline-none transition-all">
                                     </div>
                                 </div>
-                                <div class="mt-6 pt-2 border-t border-gray-100 text-center">
-                                    <code id="previewHash"
-                                        class="text-[0.6rem] text-indigo-400 break-all cursor-pointer hover:text-indigo-600"
-                                        onclick="copyHash()" title="Click to copy">0x... (Click Copy)</code>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-400 mb-1.5">Degree
+                                            Type</label>
+                                        <select id="degreeType" required
+                                            class="w-full bg-gray-900/70 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 outline-none appearance-none transition-all">
+                                            <option value="Diploma" selected>Diploma</option>
+                                            <option value="Master">Master</option>
+                                            <option value="PhD">PhD</option>
+                                            <option value="Achievement">Achievement Certificate</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-400 mb-1.5">Issuer</label>
+                                        <input type="text" id="issuerName" value="MAJDOUBI ILYAS" required
+                                            class="w-full bg-gray-900/70 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-amber-500/50 focus:border-amber-500 outline-none transition-all">
+                                    </div>
                                 </div>
+
+                                <button type="submit" id="issueBtn"
+                                    class="w-full mt-4 text-white font-medium py-3.5 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2"
+                                    style="background: linear-gradient(135deg, #c9a227, #b8962b);">
+                                    <ion-icon name="checkmark-circle-outline"></ion-icon> Issue Certificate
+                                </button>
+                            </form>
+
+                            <div id="issueResult" class="hidden mt-4 p-3 rounded-lg text-center text-sm"
+                                style="background: rgba(201, 162, 39, 0.1); border: 1px solid #c9a227; color: #c9a227;">
+                                <span id="issueMsg">Processing...</span>
                             </div>
                         </div>
 
-                        <div class="flex justify-end mt-4">
-                            <button onclick="downloadPDF('issuedDiploma')"
-                                class="text-sm flex items-center gap-2 text-indigo-400 hover:text-white transition-colors">
-                                <ion-icon name="download-outline"></ion-icon> Download PDF
-                            </button>
+                        <!-- ========== REVOKE PANEL ========== -->
+                        <div id="adminRevokePanel" class="admin-panel hidden glass p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold mb-5 flex items-center gap-2 text-red-400">
+                                <ion-icon name="close-circle-outline"></ion-icon>
+                                Revoke Certificate
+                            </h3>
+
+                            <form id="revokeForm" class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-400 mb-1.5">Certificate
+                                        Hash</label>
+                                    <input type="text" id="revokeHash" required placeholder="0x..."
+                                        class="w-full bg-gray-900/70 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500/50 focus:border-red-500 outline-none font-mono text-sm transition-all">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-400 mb-1.5">Reason
+                                        (Optional)</label>
+                                    <textarea id="revokeReason" rows="2" placeholder="Reason for revocation..."
+                                        class="w-full bg-gray-900/70 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-red-500/50 focus:border-red-500 outline-none resize-none transition-all"></textarea>
+                                </div>
+
+                                <div class="p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-red-400 text-xs">
+                                    <ion-icon name="warning-outline" class="align-middle mr-1"></ion-icon>
+                                    <strong>Warning:</strong> This action cannot be undone. The certificate will be
+                                    permanently revoked on the blockchain.
+                                </div>
+
+                                <button type="submit" id="revokeBtn"
+                                    class="w-full mt-2 bg-gradient-to-r from-red-600 to-red-700 hover:from-red-500 hover:to-red-600 text-white font-medium py-3.5 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2">
+                                    <ion-icon name="ban-outline"></ion-icon> Revoke Certificate
+                                </button>
+                            </form>
+
+                            <div id="revokeResult"
+                                class="hidden mt-4 p-3 rounded-lg bg-red-500/10 border border-red-500/30 text-center text-sm text-red-400">
+                                <span id="revokeMsg">Processing...</span>
+                            </div>
+                        </div>
+
+                        <!-- ========== UPDATE PANEL ========== -->
+                        <div id="adminUpdatePanel" class="admin-panel hidden glass p-6 rounded-2xl">
+                            <h3 class="text-lg font-bold mb-5 flex items-center gap-2 text-blue-400">
+                                <ion-icon name="refresh-outline"></ion-icon>
+                                Update Certificate
+                            </h3>
+
+                            <!-- Step 1: Lookup -->
+                            <div id="updateLookupSection" class="space-y-4">
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-400 mb-1.5">Certificate Hash (to
+                                        lookup)</label>
+                                    <div class="flex gap-2">
+                                        <input type="text" id="updateLookupHash" required placeholder="0x..."
+                                            class="flex-1 bg-gray-900/70 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none font-mono text-sm transition-all">
+                                        <button type="button" onclick="lookupCertificateForUpdate()"
+                                            class="px-4 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors flex items-center gap-2">
+                                            <ion-icon name="search-outline"></ion-icon> Find
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Step 2: Edit Form (hidden initially) -->
+                            <form id="updateForm" class="hidden space-y-4 mt-4 pt-4 border-t border-gray-700">
+                                <div
+                                    class="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30 text-blue-400 text-xs mb-4">
+                                    <ion-icon name="information-circle-outline" class="align-middle mr-1"></ion-icon>
+                                    Editing certificate. Modify the fields below and click Update.
+                                </div>
+
+                                <div>
+                                    <label class="block text-xs font-medium text-gray-400 mb-1.5">Full Name</label>
+                                    <input type="text" id="updateName" required
+                                        class="w-full bg-gray-900/70 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all">
+                                </div>
+                                <div class="grid grid-cols-2 gap-3">
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-400 mb-1.5">Major</label>
+                                        <select id="updateMajor" required
+                                            class="w-full bg-gray-900/70 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none appearance-none transition-all">
+                                            <option value="IRSI">IRSI</option>
+                                            <option value="ROC">ROC</option>
+                                            <option value="AI">AI</option>
+                                            <option value="GI">GI</option>
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label class="block text-xs font-medium text-gray-400 mb-1.5">Year</label>
+                                        <input type="number" id="updateYear" min="2000" max="2100" required
+                                            class="w-full bg-gray-900/70 border border-gray-600 rounded-lg px-4 py-3 focus:ring-2 focus:ring-blue-500/50 focus:border-blue-500 outline-none transition-all">
+                                    </div>
+                                </div>
+
+                                <button type="submit" id="updateBtn"
+                                    class="w-full mt-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-500 hover:to-blue-600 text-white font-medium py-3.5 rounded-xl shadow-lg transition-all flex justify-center items-center gap-2">
+                                    <ion-icon name="save-outline"></ion-icon> Save Changes
+                                </button>
+                            </form>
+
+                            <div id="updateResult"
+                                class="hidden mt-4 p-3 rounded-lg bg-blue-500/10 border border-blue-500/30 text-center text-sm text-blue-400">
+                                <span id="updateMsg">Processing...</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Right Panel: Certificate Preview (A4 Landscape) -->
+                    <div class="xl:col-span-3">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-lg font-bold flex items-center gap-2">
+                                <ion-icon name="document-outline" style="color: #c9a227;"></ion-icon>
+                                Certificate Preview
+                            </h3>
+                            <span class="text-xs text-gray-500">A4 Landscape (3508×2480 px)</span>
+                        </div>
+
+                        <!-- A4 Preview Container with Scroll -->
+                        <div class="rounded-2xl overflow-hidden border border-gray-700 bg-gray-900/30"
+                            style="max-height: 75vh; overflow-y: auto;">
+
+                            <!-- Placeholder -->
+                            <div id="diplomaPlaceholder"
+                                class="flex flex-col items-center justify-center text-gray-500 p-12 text-center"
+                                style="min-height: 400px;">
+                                <ion-icon name="document-text-outline" class="text-5xl mb-4 opacity-40"></ion-icon>
+                                <p class="text-sm">Fill out the form to generate a preview</p>
+                                <p class="text-xs text-gray-600 mt-2">Certificate will appear here in A4 landscape
+                                    format</p>
+                            </div>
+
+                            <!-- Actual A4 Landscape Certificate Preview -->
+                            <div id="diplomaPreview" class="hidden p-4">
+                                <div id="issuedDiploma" class="mx-auto shadow-2xl"
+                                    style="width: 100%; max-width: 800px; aspect-ratio: 3508/2480; background: linear-gradient(145deg, #fffef7 0%, #faf6e8 100%); border: 6px solid #c9a227; outline: 3px solid #1e3a5f; outline-offset: 6px; padding: 30px 50px; display: flex; flex-direction: column; justify-content: space-between;">
+
+                                    <!-- Certificate Header -->
+                                    <div class="flex items-center justify-between">
+                                        <!-- Left: Logo -->
+                                        <div class="flex-shrink-0">
+                                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none">
+                                                <circle cx="12" cy="8" r="6" stroke="#c9a227" stroke-width="2"
+                                                    fill="#ffd700" />
+                                                <path d="M8 14L6 22L12 18L18 22L16 14" stroke="#c9a227" stroke-width="2"
+                                                    fill="#c9a227" />
+                                            </svg>
+                                        </div>
+
+                                        <!-- Center: Title -->
+                                        <div class="text-center flex-1 px-4">
+                                            <h1 class="text-3xl font-serif font-bold tracking-widest"
+                                                style="color: #1e3a5f;">ENIAD</h1>
+                                            <p class="text-xs font-semibold tracking-[0.15em] uppercase italic"
+                                                style="color: #c9a227;">
+                                                National School of Artificial Intelligence and Digitale
+                                            </p>
+                                        </div>
+
+                                        <!-- Right: Degree Type Badge -->
+                                        <div class="flex-shrink-0 text-center px-4 py-2 rounded-lg"
+                                            style="background: linear-gradient(135deg, #c9a227, #b8962b); color: #1e3a5f;">
+                                            <span id="previewDegreeType"
+                                                class="text-sm font-bold uppercase tracking-wide">Diploma</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Divider -->
+                                    <div class="w-full h-0.5 my-3"
+                                        style="background: linear-gradient(90deg, #c9a227, #ffd700, #c9a227);"></div>
+
+                                    <!-- Certificate Body - Horizontal Layout -->
+                                    <div class="flex-1 flex items-center">
+                                        <!-- Left Side: Main Content -->
+                                        <div class="flex-1 text-center py-4">
+                                            <p class="text-base" style="color: #1e3a5f;">This certifies that</p>
+                                            <h2 id="previewName"
+                                                class="text-2xl font-serif italic font-bold py-2 px-6 my-2 inline-block"
+                                                style="color: #1e3a5f; border-bottom: 3px solid #c9a227; min-width: 250px;">
+                                                _____________________
+                                            </h2>
+                                            <p class="text-sm mt-2" style="color: #1e3a5f;">has successfully completed
+                                                the requirements for the major in</p>
+                                            <h3 id="previewMajor" class="text-xl font-bold mt-2"
+                                                style="color: #1e3a5f;">_______</h3>
+
+                                            <!-- Year & ID Row -->
+                                            <div class="flex justify-center gap-8 mt-4 text-sm" style="color: #c9a227;">
+                                                <span><strong style="color: #1e3a5f;">Year:</strong> <span
+                                                        id="previewYear">____</span></span>
+                                                <span><strong style="color: #1e3a5f;">ID:</strong> <span
+                                                        id="previewIds">______ / ______</span></span>
+                                            </div>
+                                        </div>
+
+                                        <!-- Right Side: QR Code -->
+                                        <div class="flex-shrink-0 pl-6">
+                                            <div id="previewQRCode"
+                                                class="w-28 h-28 bg-white rounded-lg border-2 flex items-center justify-center"
+                                                style="border-color: #c9a227;">
+                                                <ion-icon name="qr-code" class="text-5xl"
+                                                    style="color: #1e3a5f;"></ion-icon>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Footer: Signatures & Hash -->
+                                    <div class="border-t-2 pt-4" style="border-color: #c9a227;">
+                                        <div class="flex justify-between items-end">
+                                            <!-- Issuer Signature -->
+                                            <div class="text-center">
+                                                <div class="h-10 flex items-end justify-center"
+                                                    style="font-family: 'Brush Script MT', cursive; font-size: 24px; color: #1e3a5f;">
+                                                    M. Ilyas
+                                                </div>
+                                                <div class="border-t-2 w-36 text-xs uppercase pt-1"
+                                                    style="border-color: #1e3a5f; color: #c9a227;">
+                                                    <strong id="previewIssuer" style="color: #1e3a5f;">MAJDOUBI
+                                                        ILYAS</strong><br />Issuer
+                                                </div>
+                                            </div>
+
+                                            <!-- Hash -->
+                                            <div class="text-center px-4 py-2 rounded flex-1 mx-8"
+                                                style="background: rgba(201, 162, 39, 0.15); border: 1px solid #c9a227;">
+                                                <p class="text-xs uppercase tracking-wider mb-1"
+                                                    style="color: #1e3a5f;">Certificate Hash</p>
+                                                <code id="previewHash"
+                                                    class="text-xs break-all cursor-pointer hover:opacity-80"
+                                                    style="color: #c9a227;" onclick="copyHash()" title="Click to copy">
+                                                    0x... (Generated after issuance)
+                                                </code>
+                                            </div>
+
+                                            <!-- Director Signature -->
+                                            <div class="text-center">
+                                                <div class="h-10 flex items-end justify-center"
+                                                    style="font-family: 'Brush Script MT', cursive; font-size: 24px; color: #1e3a5f;">
+                                                    N. Hilali
+                                                </div>
+                                                <div class="border-t-2 w-36 text-xs uppercase pt-1"
+                                                    style="border-color: #1e3a5f; color: #c9a227;">
+                                                    <strong style="color: #1e3a5f;">EL HILALI NABIL</strong><br />School
+                                                    Director
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Download Button -->
+                                <div class="flex justify-center mt-6">
+                                    <button onclick="downloadPDF('issuedDiploma')"
+                                        class="px-6 py-3 rounded-xl text-white font-medium flex items-center gap-2 transition-all hover:opacity-90"
+                                        style="background: linear-gradient(135deg, #c9a227, #b8962b);">
+                                        <ion-icon name="download-outline"></ion-icon> Download PDF (A4 Landscape)
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -529,6 +1210,149 @@
         </section>
 
     </main>
+
+    <!-- Certificate Verification Modal -->
+    <div id="certificateModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
+        <div class="modal-content relative">
+            <button class="modal-close-btn" onclick="closeVerificationModal()">
+                <ion-icon name="close"></ion-icon>
+            </button>
+
+            <!-- Success State -->
+            <div id="modalVerificationResult" class="hidden">
+                <div
+                    class="bg-gradient-to-br from-green-500/10 to-emerald-500/5 rounded-t-2xl p-4 text-center border-b border-white/5">
+                    <div class="verified-badge mx-auto">
+                        <ion-icon name="shield-checkmark"></ion-icon>
+                        Verified on Blockchain
+                    </div>
+                </div>
+
+                <div id="modalDiploma" class="m-4 rounded-lg overflow-hidden shadow-xl"
+                    style="background: linear-gradient(145deg, #fffef7 0%, #faf6e8 100%); border: 4px solid #c9a227; outline: 2px solid #1e3a5f; outline-offset: 4px;">
+                    <div class="p-6 text-center">
+                        <!-- Header -->
+                        <div class="flex justify-center mb-2">
+                            <svg width="40" height="40" viewBox="0 0 24 24" fill="none">
+                                <circle cx="12" cy="8" r="6" stroke="#c9a227" stroke-width="2" fill="#ffd700" />
+                                <path d="M8 14L6 22L12 18L18 22L16 14" stroke="#c9a227" stroke-width="2"
+                                    fill="#c9a227" />
+                            </svg>
+                        </div>
+                        <h1 class="text-2xl font-serif font-bold tracking-widest" style="color: #1e3a5f;">ENIAD</h1>
+                        <p class="text-xs font-semibold tracking-[0.1em] uppercase italic" style="color: #c9a227;">
+                            National School of Artificial Intelligence and Digitale
+                        </p>
+                        <p class="text-sm italic mt-1" style="color: #1e3a5f; font-family: Georgia, serif;">
+                            Digital Certificate of Completion
+                        </p>
+
+                        <!-- Divider -->
+                        <div class="w-full h-0.5 my-4"
+                            style="background: linear-gradient(90deg, transparent, #c9a227, transparent);"></div>
+
+                        <!-- Content -->
+                        <p class="text-sm" style="color: #1e3a5f;">This certifies that</p>
+                        <h2 id="modalCertName" class="text-xl font-serif italic font-bold py-2 px-4"
+                            style="color: #1e3a5f; border-bottom: 2px solid #c9a227; display: inline-block;">
+                            Student Name
+                        </h2>
+                        <p class="text-sm mt-2" style="color: #1e3a5f;">has successfully completed the requirements for
+                            the major in</p>
+                        <h3 id="modalCertMajor" class="text-lg font-bold mt-2" style="color: #1e3a5f;">IRSI</h3>
+
+                        <!-- Year & ID -->
+                        <div class="flex justify-center gap-6 mt-3 text-sm" style="color: #c9a227;">
+                            <span><strong style="color: #1e3a5f;">Year:</strong> <span
+                                    id="modalCertYear">--</span></span>
+                            <span><strong style="color: #1e3a5f;">ID:</strong> <span id="modalCertIds">--</span></span>
+                        </div>
+
+                        <!-- Signatures -->
+                        <div class="flex justify-between items-end pt-4 px-4">
+                            <div class="text-center">
+                                <div class="h-8 flex items-end justify-center"
+                                    style="font-family: 'Brush Script MT', cursive; font-size: 18px; color: #1e3a5f;">
+                                    M. Ilyas
+                                </div>
+                                <div class="border-t-2 w-24 text-[0.55rem] uppercase pt-0.5"
+                                    style="border-color: #1e3a5f; color: #c9a227;">
+                                    <strong style="color: #1e3a5f;">MAJDOUBI ILYAS</strong><br />Issuer
+                                </div>
+                            </div>
+
+                            <!-- QR Code -->
+                            <div id="modalQRCode"
+                                class="w-16 h-16 bg-white rounded border-2 flex items-center justify-center"
+                                style="border-color: #c9a227;">
+                                <ion-icon name="qr-code" class="text-2xl" style="color: #1e3a5f;"></ion-icon>
+                            </div>
+
+                            <div class="text-center">
+                                <div class="h-8 flex items-end justify-center"
+                                    style="font-family: 'Brush Script MT', cursive; font-size: 18px; color: #1e3a5f;">
+                                    N. Hilali
+                                </div>
+                                <div class="border-t-2 w-24 text-[0.55rem] uppercase pt-0.5"
+                                    style="border-color: #1e3a5f; color: #c9a227;">
+                                    <strong style="color: #1e3a5f;">EL HILALI NABIL</strong><br />School Director
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Actions -->
+                <div class="p-4 rounded-b-2xl flex items-center justify-between"
+                    style="background: rgba(201, 162, 39, 0.1);">
+                    <div class="text-center flex-1">
+                        <p class="text-[0.55rem] uppercase tracking-wider mb-0.5" style="color: #1e3a5f;">Certificate
+                            Hash:</p>
+                        <code id="modalCertHash" class="text-xs break-all cursor-pointer hover:opacity-80"
+                            style="color: #c9a227;" onclick="copyModalHash()" title="Click to copy">0x...</code>
+                    </div>
+                    <div class="flex gap-3 ml-4">
+                        <button onclick="closeVerificationModal()"
+                            class="px-4 py-2 text-sm font-medium text-gray-400 hover:text-white transition-colors">
+                            Close
+                        </button>
+                        <button onclick="downloadPDF('modalDiploma')"
+                            class="px-4 py-2 text-sm font-medium text-white rounded-lg transition-colors flex items-center gap-2"
+                            style="background: linear-gradient(135deg, #c9a227, #b8962b);">
+                            <ion-icon name="download-outline"></ion-icon> Download PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Revoked State -->
+            <div id="modalVerificationRevoked" class="hidden p-8 text-center">
+                <div class="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <ion-icon name="ban" class="text-5xl text-red-500"></ion-icon>
+                </div>
+                <h3 class="text-2xl font-bold text-red-500 mb-2">Certificate Revoked</h3>
+                <p class="text-gray-400 mb-6">This certificate has been revoked and is no longer valid.</p>
+                <button onclick="closeVerificationModal()"
+                    class="px-6 py-2 text-sm font-medium bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                    Close
+                </button>
+            </div>
+
+            <!-- Error/Not Found State -->
+            <div id="modalVerificationError" class="hidden p-8 text-center">
+                <div class="w-20 h-20 bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-6">
+                    <ion-icon name="search" class="text-5xl text-gray-400"></ion-icon>
+                </div>
+                <h3 class="text-2xl font-bold text-white mb-2">No Record Found</h3>
+                <p class="text-gray-400 mb-2" id="modalErrorMessage">Check the ID or Hash and try again.</p>
+                <p class="text-xs text-gray-500 mb-6">Make sure you're using a valid certificate hash or student ID.</p>
+                <button onclick="closeVerificationModal()"
+                    class="px-6 py-2 text-sm font-medium bg-gray-700 text-white rounded-lg hover:bg-gray-600 transition-colors">
+                    Close
+                </button>
+            </div>
+        </div>
+    </div>
 
     <!-- JS -->
     <script src="config.js"></script>
