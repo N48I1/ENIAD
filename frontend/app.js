@@ -398,8 +398,17 @@ function switchTab(tabName) {
     }
 
     // Auto-refresh statistics when switching to admin tab
-    if (tabName === 'admin' && contract) {
-        refreshStatistics();
+    if (tabName === 'admin') {
+        if (contract) {
+            refreshStatistics();
+
+            // Logic to show/hide pending section
+            const pendingSection = document.getElementById('pendingApprovalsSection');
+            if (pendingSection) {
+                pendingSection.classList.remove('hidden');
+                loadPendingCertificates();
+            }
+        }
     }
 }
 
@@ -1046,53 +1055,174 @@ async function issueCertificate(e) {
     msg.textContent = 'Please confirm transaction in MetaMask...';
 
     try {
-        // Use issueCertificateExtended with degreeType and issuerName
-        const gasEstimate = await contract.estimateGas.issueCertificateExtended(name, combinedId, major, degreeType, issuerName, year);
+        // Use initiateCertificate (Dual Signature Flow)
+        // Note: _issuerName is passed in the struct but not as an argument in the initiate function in some contract versions
+        // Let's check the ABI or assume initiateCertificate takes 6 args:
+        // initiateCertificate(studentName, studentId, diploma, degreeType, issuerName, year)
+
+        // Checking if initiateCertificate exists on contract
+        if (typeof contract.initiateCertificate !== 'function') {
+            throw new Error("Contract does not support Dual Signature (initiateCertificate missing)");
+        }
+
+        const gasEstimate = await contract.estimateGas.initiateCertificate(name, combinedId, major, degreeType, issuerName, year);
         showToast(`Estimated gas: ${gasEstimate.toString()}`, 'info');
 
-        const tx = await contract.issueCertificateExtended(name, combinedId, major, degreeType, issuerName, year);
-        msg.textContent = 'Transaction sent! Waiting for confirmation...';
+        const tx = await contract.initiateCertificate(name, combinedId, major, degreeType, issuerName, year);
+        msg.textContent = 'Transaction sent! Waiting to initiate certificate...';
 
         const receipt = await tx.wait();
 
-        // Find Hash from event
-        const event = receipt.events?.find(e => e.event === 'CertificateIssued');
-        const hash = event?.args?.certificateHash;
+        // Find Hash from event CertificateInitiated
+        const event = receipt.events?.find(e => e.event === 'CertificateInitiated');
+        const hash = event?.args?.pendingHash;
 
-        // Show Success Message
-        resultBox.className = 'notification success';
-        msg.innerHTML = `<strong>✅ Certificate Issued Successfully!</strong>`;
+        // Show Success Message (Initiated)
+        resultBox.className = 'notification info';
+        resultBox.style.background = 'rgba(201, 162, 39, 0.1)';
+        resultBox.style.border = '1px solid #c9a227';
+        resultBox.style.color = '#c9a227';
 
-        // Update and Show Diploma Preview
-        document.getElementById('previewName').textContent = name;
-        document.getElementById('previewMajor').textContent = major; // Display just the major name e.g. "IRSI"
-        document.getElementById('previewYear').textContent = year;
-        document.getElementById('previewIds').textContent = `${cni} / ${apogee}`;
-        document.getElementById('previewHash').textContent = hash;
-
-        // Generate QR code with verification URL
-        generateVerificationQRCode('previewQRCode', hash);
-
-        // Hide placeholder and show actual preview
-        const placeholder = document.getElementById('diplomaPlaceholder');
-        if (placeholder) placeholder.classList.add('hidden');
-
-        preview.classList.remove('hidden');
-        preview.scrollIntoView({ behavior: 'smooth' });
+        msg.innerHTML = `<strong>⏳ Certificate Initiated!</strong><br><span class="text-sm">Waiting for second signature. Hash: ${hash ? hash.substring(0, 10) + '...' : 'N/A'}</span>`;
 
         document.getElementById('issueForm').reset();
-        showToast('Certificate issued successfully!', 'success');
+        showToast('Certificate initiated. Waiting for co-signature.', 'info');
+
+        // Refresh pending list if visible
+        if (!document.getElementById('pendingApprovalsSection').classList.contains('hidden')) {
+            loadPendingCertificates();
+        }
 
     } catch (error) {
         console.error('Issuance error:', error);
         resultBox.className = 'notification error';
         msg.textContent = `Error: ${error.reason || error.message}`;
-        showToast('Failed to issue certificate', 'error');
+        showToast('Failed to initiate certificate', 'error');
     } finally {
         setButtonLoading(btn, false, `
             <ion-icon name="add-circle-outline"></ion-icon>
-            Issue Certificate
+            Initiate Certificate
         `);
+    }
+}
+
+// Load Pending Certificates (Dual Signature)
+async function loadPendingCertificates() {
+    const tableBody = document.getElementById('pendingCertificatesTable');
+    if (!tableBody) return;
+
+    if (!contract) {
+        tableBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">Connect wallet to view pending approvals.</td></tr>';
+        return;
+    }
+
+    try {
+        tableBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">Loading pending requests...</td></tr>';
+
+        // Get past CertificateInitiated events
+        // Note: Querying from block 0 might be slow on mainnet, but okay for testnet/dev
+        // Ideally use a recent block number or indexer
+        const filter = contract.filters.CertificateInitiated();
+        const events = await contract.queryFilter(filter, 0, 'latest'); // Query all history
+
+        if (events.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">No pending approvals found.</td></tr>';
+            return;
+        }
+
+        // For each initiated event, check if it is still pending (not yet issued)
+        // We can check if pendingCertificates mapping still has it, or if a CertificateIssued event exists for it
+        // The contract deletes pendingCertificates element upon issuance.
+
+        const pendingList = [];
+
+        for (const event of events) {
+            const hash = event.args.pendingHash;
+
+            // Check contract mapping to see if it really exists
+            const pendingCert = await contract.pendingCertificates(hash);
+
+            if (pendingCert && pendingCert.exists) {
+                pendingList.push({
+                    hash: hash,
+                    studentName: pendingCert.studentName,
+                    studentId: pendingCert.studentId,
+                    diploma: pendingCert.diploma,
+                    year: pendingCert.year.toString(),
+                    initiatedBy: pendingCert.initiatedBy
+                });
+            }
+        }
+
+        if (pendingList.length === 0) {
+            tableBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-gray-500">All requests processed. No pending approvals.</td></tr>';
+            return;
+        }
+
+        tableBody.innerHTML = '';
+        pendingList.forEach(cert => {
+            const isMyRequest = cert.initiatedBy.toLowerCase() === userAddress.toLowerCase();
+
+            const tr = document.createElement('tr');
+            tr.className = 'border-b border-gray-800 hover:bg-white/5 transition-colors';
+
+            // Format ID for display
+            let displayId = cert.studentId;
+            if (displayId.includes('|')) displayId = displayId.split('|')[0].trim();
+
+            tr.innerHTML = `
+                <td class="p-3 font-medium text-white">${cert.studentName}</td>
+                <td class="p-3 text-gray-400 text-xs font-mono">${displayId}</td>
+                <td class="p-3 text-indigo-300">${cert.diploma}</td>
+                <td class="p-3 text-gray-400">${cert.year}</td>
+                <td class="p-3 text-xs font-mono text-gray-500" title="${cert.initiatedBy}">
+                    ${cert.initiatedBy.substring(0, 6)}...${cert.initiatedBy.substring(38)}
+                    ${isMyRequest ? '<span class="ml-1 text-indigo-400">(You)</span>' : ''}
+                </td>
+                <td class="p-3 text-right">
+                    ${isMyRequest ?
+                    `<span class="text-xs text-gray-500 italic">Waiting co-signature</span>` :
+                    `<button onclick="coSignCertificate('${cert.hash}')" 
+                            class="px-3 py-1 rounded bg-green-500/10 text-green-400 border border-green-500/30 hover:bg-green-500/20 text-xs font-bold transition-all">
+                            Co-Sign
+                         </button>`
+                }
+                </td>
+            `;
+            tableBody.appendChild(tr);
+        });
+
+    } catch (error) {
+        console.error("Error loading pending certs:", error);
+        tableBody.innerHTML = '<tr><td colspan="6" class="p-4 text-center text-red-400">Error loading data.</td></tr>';
+    }
+}
+
+// Co-Sign Function
+async function coSignCertificate(hash) {
+    if (!contract || !hash) return;
+
+    if (!confirm("Are you sure you want to co-sign and issue this certificate?")) return;
+
+    try {
+        showToast("Co-signing certificate...", "info");
+
+        const tx = await contract.coSignCertificate(hash);
+        showToast("Transaction sent! Approving...", "info");
+
+        await tx.wait();
+
+        showToast("Certificate successfully Co-Signed and Issued!", "success");
+
+        // Refresh list
+        loadPendingCertificates();
+
+        // Refresh stats
+        refreshStatistics();
+
+    } catch (error) {
+        console.error("Co-sign error:", error);
+        showToast(`Failed to co-sign: ${error.reason || error.message}`, "error");
     }
 }
 
@@ -1213,6 +1343,8 @@ window.closeModalOnOverlay = closeModalOnOverlay;
 window.copyModalHash = copyModalHash;
 window.switchAdminTab = switchAdminTab;
 window.lookupCertificateForUpdate = lookupCertificateForUpdate;
+window.loadPendingCertificates = loadPendingCertificates;
+window.coSignCertificate = coSignCertificate;
 window.refreshStatistics = refreshStatistics;
 
 // Initialize app
