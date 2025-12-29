@@ -191,9 +191,15 @@ function setupRealTimeFormBinding() {
         const hasContent = nameInput?.value.trim() || cniInput?.value.trim() ||
             apogeeInput?.value.trim() || majorSelect?.value;
 
+        const downloadBtnContainer = document.getElementById('downloadBtnContainer');
+
         if (hasContent && diplomaPlaceholder && diplomaPreview) {
             diplomaPlaceholder.classList.add('hidden');
             diplomaPreview.classList.remove('hidden');
+            // Show download button when certificate is visible
+            if (downloadBtnContainer) {
+                downloadBtnContainer.classList.remove('hidden');
+            }
         }
     }
 
@@ -1099,20 +1105,99 @@ function copyHash() {
     });
 }
 
-function downloadPDF(elementId) {
-    const element = document.getElementById(elementId);
-    if (!element) return;
+// Helper to create a consistent clone for both Preview and PDF
+function createCertificateClone(original) {
+    const clone = original.cloneNode(true);
 
-    // Options for html2pdf
+    // Reset styles to ensure perfect A4 rendering
+    clone.style.width = '1000px';
+    clone.style.height = '700px';
+    clone.style.transform = 'none';
+    clone.style.margin = '0 auto';
+    clone.style.position = 'static';
+    clone.style.maxWidth = 'none';
+    clone.style.minWidth = '1000px'; // Enforce minimum width
+    clone.style.display = 'flex';
+    clone.classList.remove('hidden');
+
+    return clone;
+}
+
+// Full Screen Preview Logic
+function openFullScreenPreview() {
+    const original = document.getElementById('issuedDiploma');
+    const container = document.getElementById('fullScreenPreviewContainer');
+    const modal = document.getElementById('fullScreenModal');
+
+    if (!original || !container || !modal) return;
+
+    container.innerHTML = '';
+
+    const clone = createCertificateClone(original);
+    clone.id = 'fullScreenCertificate';
+    clone.style.boxShadow = '0 25px 50px -12px rgba(0, 0, 0, 0.5)';
+
+    container.appendChild(clone);
+    modal.classList.remove('hidden');
+}
+
+function closeFullScreenPreview() {
+    document.getElementById('fullScreenModal').classList.add('hidden');
+}
+
+function downloadPDF(elementId) {
+    const original = document.getElementById(elementId);
+    if (!original) return;
+
+    showToast('Generating PDF...', 'info');
+
+    // 1. Create a temporary invisible container for capture
+    const captureContainer = document.createElement('div');
+    captureContainer.style.position = 'fixed';
+    captureContainer.style.left = '-9999px'; // Move off-screen
+    captureContainer.style.top = '0';
+    captureContainer.style.width = '1200px'; // Ample space
+    captureContainer.style.height = 'auto';
+    captureContainer.style.background = '#fff';
+    captureContainer.style.zIndex = '-1';
+
+    // 2. Clone using our shared helper
+    const clone = createCertificateClone(original);
+    // Remove shadow for clean PDF print
+    clone.style.boxShadow = 'none';
+    clone.style.border = '5px solid #c9a227'; // Ensure border exactness
+
+    captureContainer.appendChild(clone);
+    document.body.appendChild(captureContainer);
+
+    // 3. Options for html2pdf - A4 Landscape
     const opt = {
-        margin: 0.5,
+        margin: 0.2,
         filename: 'ENIAD_Certificate.pdf',
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2 },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'landscape' }
+        html2canvas: {
+            scale: 2,
+            useCORS: true,
+            logging: false,
+            // Explicitly capture the clone's dimensions
+            width: 1000,
+            height: 700,
+            windowWidth: 1200,
+            windowHeight: 900
+        },
+        jsPDF: { unit: 'in', format: 'a4', orientation: 'landscape' }
     };
 
-    html2pdf().set(opt).from(element).save();
+    html2pdf().set(opt).from(clone).save().then(() => {
+        document.body.removeChild(captureContainer);
+        showToast('Certificate downloaded!', 'success');
+    }).catch(err => {
+        if (document.body.contains(captureContainer)) {
+            document.body.removeChild(captureContainer);
+        }
+        console.error('PDF error:', err);
+        showToast('Failed to download', 'error');
+    });
 }
 
 // =============================================================================

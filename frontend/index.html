@@ -29,7 +29,9 @@
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&display=swap"
+        rel="stylesheet">
 
     <!-- Libraries -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/5.7.2/ethers.umd.min.js"></script>
@@ -572,6 +574,11 @@
                         Live on zkSync Era Testnet
                     </div>
 
+                    <!-- ENIAD Logo -->
+                    <div>
+                        <img src="eniad-logo.png" alt="ENIAD Logo" class="h-24 w-auto brightness-110 drop-shadow-2xl">
+                    </div>
+
                     <h1 class="text-5xl lg:text-6xl font-bold leading-tight">
                         Verify Diplomas <br>
                         <span
@@ -628,117 +635,132 @@
                             <!-- Glow ring inside certificate so it moves together -->
                             <div class="glow-ring"></div>
 
-                            <!-- Front Face - Landscape A4 -->
+                            <!-- Front Face - Elegant Landscape A4 -->
                             <div class="certificate-3d-face certificate-3d-front">
-                                <div class="shimmer"></div>
+                                <!-- Decorative Corner Elements -->
+                                <div class="absolute top-2 left-2 w-8 h-8 border-l-2 border-t-2"
+                                    style="border-color: #c9a227;"></div>
+                                <div class="absolute top-2 right-2 w-8 h-8 border-r-2 border-t-2"
+                                    style="border-color: #c9a227;"></div>
+                                <div class="absolute bottom-2 left-2 w-8 h-8 border-l-2 border-b-2"
+                                    style="border-color: #c9a227;"></div>
+                                <div class="absolute bottom-2 right-2 w-8 h-8 border-r-2 border-b-2"
+                                    style="border-color: #c9a227;"></div>
 
-                                <!-- Top Row: Logo, Title, Degree Type Badge -->
-                                <div class="flex items-center justify-between">
-                                    <!-- Logo -->
+                                <!-- Header with Logo -->
+                                <div class="flex items-center justify-between mb-1">
+                                    <!-- Left: ENIAD Logo -->
                                     <div class="flex items-center gap-2">
-                                        <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
-                                            <circle cx="12" cy="8" r="5" stroke="#c9a227" stroke-width="2"
-                                                fill="#ffd700" />
-                                            <path d="M9 13L7 20L12 17L17 20L15 13" stroke="#c9a227" stroke-width="2"
-                                                fill="#c9a227" />
-                                        </svg>
-                                        <div>
-                                            <h1 class="text-base font-serif font-bold" style="color: #1e3a5f;">ENIAD
-                                            </h1>
-                                            <p class="text-[5px] uppercase tracking-wider" style="color: #c9a227;">
-                                                National School of AI</p>
-                                        </div>
+                                        <img src="eniad-logo.png" alt="ENIAD" class="w-12 h-12 object-contain" />
                                     </div>
-                                    <!-- Title -->
-                                    <div class="text-center flex-1">
-                                        <p class="text-[8px] font-semibold uppercase tracking-[0.15em]"
-                                            style="color: #1e3a5f;">
-                                            Certificate of Completion
+
+                                    <!-- Center: Title -->
+                                    <div class="text-center flex-1 px-2">
+                                        <p class="text-[6px] uppercase tracking-[0.2em] mb-0.5" style="color: #8b4513;">
+                                            École Nationale de l'Intelligence Artificielle et du Digital
                                         </p>
+                                        <h1 class="text-sm font-bold uppercase tracking-widest"
+                                            style="color: #1e3a5f; font-family: Georgia, serif;">
+                                            Certificate of Achievement
+                                        </h1>
                                     </div>
-                                    <!-- Degree Badge -->
-                                    <div class="px-2 py-1 rounded text-[7px] font-bold uppercase"
-                                        style="background: linear-gradient(135deg, #c9a227, #ffd700); color: #1e3a5f;">
+
+                                    <!-- Right: Degree Badge -->
+                                    <div class="px-3 py-1 rounded-full text-[7px] font-bold uppercase"
+                                        style="background: linear-gradient(135deg, #c9a227, #ffd700); color: #1e3a5f; box-shadow: 0 2px 4px rgba(201,162,39,0.3);">
                                         Diploma
                                     </div>
                                 </div>
 
-                                <!-- Divider -->
-                                <div class="w-full h-px my-1.5"
-                                    style="background: linear-gradient(90deg, transparent, #c9a227, transparent);">
+                                <!-- Elegant Divider -->
+                                <div class="flex items-center gap-2 my-1">
+                                    <div class="flex-1 h-px"
+                                        style="background: linear-gradient(90deg, transparent, #c9a227);"></div>
+                                    <div class="w-1.5 h-1.5 rotate-45" style="background: #c9a227;"></div>
+                                    <div class="flex-1 h-px"
+                                        style="background: linear-gradient(90deg, #c9a227, transparent);"></div>
                                 </div>
 
-                                <!-- Main Content Row -->
-                                <div class="flex-1 flex gap-3">
-                                    <!-- Left: Main Content -->
-                                    <div class="flex-1 flex flex-col justify-center text-center">
-                                        <p class="text-[7px]" style="color: #1e3a5f;">This certifies that</p>
-                                        <h2 id="demo3dName" class="text-base font-serif italic font-bold py-1"
-                                            style="color: #1e3a5f; border-bottom: 1px solid #c9a227;">
+                                <!-- Main Content -->
+                                <div class="flex-1 flex gap-4">
+                                    <!-- Left: Certificate Content -->
+                                    <div class="flex-1 flex flex-col justify-center text-center px-2">
+                                        <p class="text-[7px] italic mb-1" style="color: #666;">This is to certify that
+                                        </p>
+
+                                        <!-- Student Name with Elegant Font -->
+                                        <h2 id="demo3dName" class="text-xl py-1 mb-1"
+                                            style="color: #1e3a5f; font-family: 'Playfair Display', Georgia, serif; font-weight: 600; font-style: italic; border-bottom: 2px solid #c9a227;">
                                             Sample Student Name
                                         </h2>
-                                        <p class="text-[6px] mt-1" style="color: #1e3a5f;">has successfully completed
-                                            the requirements for</p>
-                                        <h3 id="demo3dMajor" class="text-sm font-bold mt-0.5" style="color: #1e3a5f;">
-                                            Engineering Degree in IRSI
+
+                                        <p class="text-[6px] mt-1" style="color: #666;">has successfully completed the
+                                            requirements for the degree of</p>
+
+                                        <h3 id="demo3dMajor" class="text-sm font-bold mt-1"
+                                            style="color: #8b4513; font-family: Georgia, serif;">
+                                            Engineering in IRSI
                                         </h3>
 
-                                        <!-- Year & ID -->
-                                        <div class="flex justify-center gap-4 mt-1 text-[6px]" style="color: #c9a227;">
-                                            <span><strong style="color: #1e3a5f;">Year:</strong> <span
-                                                    id="demo3dYear">2025</span></span>
-                                            <span><strong style="color: #1e3a5f;">ID:</strong> <span id="demo3dIds">CNI
-                                                    / APOGEE</span></span>
+                                        <!-- Year & ID in Elegant Style -->
+                                        <div class="flex justify-center gap-6 mt-2 text-[6px]">
+                                            <span style="color: #666;">
+                                                <span style="color: #c9a227;">⬥</span> Year: <strong id="demo3dYear"
+                                                    style="color: #1e3a5f;">2025</strong>
+                                            </span>
+                                            <span style="color: #666;">
+                                                <span style="color: #c9a227;">⬥</span> ID: <strong id="demo3dIds"
+                                                    style="color: #1e3a5f;">CNI / APOGEE</strong>
+                                            </span>
                                         </div>
                                     </div>
 
                                     <!-- Right: QR Code -->
                                     <div class="flex flex-col items-center justify-center">
                                         <div id="demo3dQRCode"
-                                            class="w-20 h-20 bg-white rounded p-1 flex items-center justify-center"
+                                            class="w-16 h-16 bg-white rounded-lg p-1 flex items-center justify-center shadow-md"
                                             style="border: 2px solid #c9a227;">
                                             <ion-icon name="qr-code" class="text-3xl"
                                                 style="color: #1e3a5f;"></ion-icon>
                                         </div>
-                                        <p class="text-[5px] mt-1 uppercase" style="color: #c9a227;">Scan to Verify</p>
+                                        <p class="text-[5px] mt-1 uppercase tracking-wider" style="color: #c9a227;">
+                                            Verify</p>
                                     </div>
                                 </div>
 
-                                <!-- Footer: Signatures and Hash -->
-                                <div class="flex items-end gap-2 mt-1">
+                                <!-- Signatures -->
+                                <div class="flex justify-between items-end px-4 mt-2">
                                     <!-- Left Signature -->
-                                    <div class="text-center flex-shrink-0">
-                                        <div class="h-5 flex items-end justify-center"
-                                            style="font-family: 'Brush Script MT', cursive; font-size: 12px; color: #1e3a5f;">
+                                    <div class="text-center">
+                                        <div class="h-6 flex items-end justify-center"
+                                            style="font-family: 'Brush Script MT', cursive; font-size: 14px; color: #1e3a5f;">
                                             M. Ilyas
                                         </div>
-                                        <div class="border-t w-14 text-[5px] uppercase pt-0.5"
-                                            style="border-color: #1e3a5f; color: #c9a227;">
+                                        <div class="border-t w-20 text-[5px] uppercase pt-0.5"
+                                            style="border-color: #c9a227; color: #666;">
                                             <strong style="color: #1e3a5f;">MAJDOUBI ILYAS</strong><br />Issuer
                                         </div>
                                     </div>
 
-                                    <!-- Center: Hash -->
-                                    <div class="flex-1 p-1 rounded text-center"
-                                        style="background: linear-gradient(135deg, #faf6e8 0%, #f5ecd7 100%); border: 1px solid #c9a227;">
-                                        <p class="text-[4px] uppercase tracking-wider mb-0.5" style="color: #1e3a5f;">
-                                            Hash:</p>
-                                        <code id="demo3dHash" class="text-[4px] break-all" style="color: #c9a227;">
-                                            0xd7e4c88...fd45ee
-                                        </code>
-                                    </div>
-
                                     <!-- Right Signature -->
-                                    <div class="text-center flex-shrink-0">
-                                        <div class="h-5 flex items-end justify-center"
-                                            style="font-family: 'Brush Script MT', cursive; font-size: 12px; color: #1e3a5f;">
+                                    <div class="text-center">
+                                        <div class="h-6 flex items-end justify-center"
+                                            style="font-family: 'Brush Script MT', cursive; font-size: 14px; color: #1e3a5f;">
                                             N. Hilali
                                         </div>
-                                        <div class="border-t w-14 text-[5px] uppercase pt-0.5"
-                                            style="border-color: #1e3a5f; color: #c9a227;">
+                                        <div class="border-t w-20 text-[5px] uppercase pt-0.5"
+                                            style="border-color: #c9a227; color: #666;">
                                             <strong style="color: #1e3a5f;">EL HILALI NABIL</strong><br />Director
                                         </div>
                                     </div>
+                                </div>
+
+                                <!-- Hash at Bottom - Clean Style -->
+                                <div class="text-center mt-2 pt-1" style="border-top: 1px dashed #c9a227;">
+                                    <code id="demo3dHash" class="text-[5px] tracking-wider"
+                                        style="color: #999; font-family: monospace;">
+                                        0xd7e4c88366edddc5bf3bfb182aa3ec2e0b2892f15829f6cacdb0a1e3b1fd45ee
+                                    </code>
                                 </div>
                             </div>
 
@@ -789,59 +811,171 @@
 
         <!-- ================= ABOUT VIEW ================= -->
         <section id="aboutView" class="view hidden">
-            <div class="max-w-4xl mx-auto space-y-12">
-                <div class="text-center space-y-4">
-                    <h2 class="text-4xl font-bold">About ENIAD Cert</h2>
-                    <p class="text-gray-400 max-w-2xl mx-auto">The National School of Artificial Intelligence and
-                        Digital (ENIAD) leverages cutting-edge blockchain technology to secure academic credentials.</p>
+            <div class="max-w-5xl mx-auto space-y-12">
+
+                <!-- School Header with Logo -->
+                <div class="flex flex-col items-center text-center space-y-6">
+                    <div class="p-6 rounded-3xl bg-white/5 border border-white/10 relative group">
+                        <div
+                            class="absolute inset-0 bg-indigo-500/20 blur-xl rounded-full opacity-50 group-hover:opacity-70 transition-opacity">
+                        </div>
+                        <img src="eniad-logo.png" alt="ENIAD Logo"
+                            class="w-48 h-auto relative z-10 brightness-110 drop-shadow-2xl">
+                    </div>
+
+                    <div class="space-y-2">
+                        <h2
+                            class="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-gray-300">
+                            École Nationale de l'Intelligence Artificielle et du Digital
+                        </h2>
+                        <a href="https://maps.google.com/?q=ENIAD+Berkane" target="_blank"
+                            class="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-indigo-500/10 text-indigo-300 text-sm font-medium hover:bg-indigo-500/20 transition-colors">
+                            <ion-icon name="location-outline"></ion-icon> Berkane, Maroc
+                        </a>
+                    </div>
+
+                    <!-- Nav Tags -->
+                    <div class="flex flex-wrap justify-center gap-3">
+                        <span
+                            class="px-4 py-2 rounded-xl bg-gray-800/50 border border-gray-700 text-gray-400 text-sm hover:text-white hover:border-indigo-500/50 transition-all cursor-default">Formations</span>
+                        <span
+                            class="px-4 py-2 rounded-xl bg-gray-800/50 border border-gray-700 text-gray-400 text-sm hover:text-white hover:border-indigo-500/50 transition-all cursor-default">Recherche</span>
+                        <span
+                            class="px-4 py-2 rounded-xl bg-gray-800/50 border border-gray-700 text-gray-400 text-sm hover:text-white hover:border-indigo-500/50 transition-all cursor-default">Coopération</span>
+                        <span
+                            class="px-4 py-2 rounded-xl bg-gray-800/50 border border-gray-700 text-gray-400 text-sm hover:text-white hover:border-indigo-500/50 transition-all cursor-default">Gouvernance</span>
+                        <span
+                            class="px-4 py-2 rounded-xl bg-gray-800/50 border border-gray-700 text-gray-400 text-sm hover:text-white hover:border-indigo-500/50 transition-all cursor-default">Espace
+                            Etudiant</span>
+                        <span
+                            class="px-4 py-2 rounded-xl bg-gray-800/50 border border-gray-700 text-gray-400 text-sm hover:text-white hover:border-indigo-500/50 transition-all cursor-default">Offres
+                            & Concours</span>
+                    </div>
                 </div>
 
-                <div class="grid md:grid-cols-3 gap-6">
-                    <div class="glass p-6 rounded-2xl space-y-3">
-                        <div
-                            class="w-12 h-12 rounded-lg bg-indigo-500/20 flex items-center justify-center text-indigo-400 text-2xl">
-                            <ion-icon name="finger-print"></ion-icon>
-                        </div>
-                        <h3 class="font-bold text-lg">Immutable</h3>
-                        <p class="text-sm text-gray-400">Once issued, certificates cannot be altered or deleted without
-                            a trace. The blockchain provides a permanent record.</p>
-                    </div>
-                    <div class="glass p-6 rounded-2xl space-y-3">
-                        <div
-                            class="w-12 h-12 rounded-lg bg-purple-500/20 flex items-center justify-center text-purple-400 text-2xl">
-                            <ion-icon name="globe"></ion-icon>
-                        </div>
-                        <h3 class="font-bold text-lg">Global Verification</h3>
-                        <p class="text-sm text-gray-400">Employers and institutions worldwide can instantly verify the
-                            authenticity of a diploma using its unique hash.</p>
-                    </div>
-                    <div class="glass p-6 rounded-2xl space-y-3">
-                        <div
-                            class="w-12 h-12 rounded-lg bg-green-500/20 flex items-center justify-center text-green-400 text-2xl">
-                            <ion-icon name="shield-checkmark"></ion-icon>
-                        </div>
-                        <h3 class="font-bold text-lg">Fraud Proof</h3>
-                        <p class="text-sm text-gray-400">Cryptographic signatures prevent forgery. Only authorized
-                            university admin wallets can issue valid certificates.</p>
-                    </div>
-                </div>
+                <!-- Description & Info Grid -->
+                <div class="grid md:grid-cols-3 gap-8 items-start">
 
-                <div class="glass p-8 rounded-3xl flex flex-col md:flex-row items-center gap-8">
-                    <div class="flex-1 space-y-4">
-                        <h3 class="text-2xl font-bold">Technical Stack</h3>
-                        <ul class="space-y-2 text-gray-300">
-                            <li class="flex items-center gap-2"><ion-icon name="checkmark-circle"
-                                    class="text-indigo-500"></ion-icon> Smart Contracts (Solidity)</li>
-                            <li class="flex items-center gap-2"><ion-icon name="checkmark-circle"
-                                    class="text-indigo-500"></ion-icon> zkSync Era Sepolia Testnet</li>
-                            <li class="flex items-center gap-2"><ion-icon name="checkmark-circle"
-                                    class="text-indigo-500"></ion-icon> Distributed Ledger Technology</li>
+                    <!-- Description -->
+                    <div class="md:col-span-2 glass p-8 rounded-3xl space-y-6">
+                        <div class="flex items-center gap-3 mb-2">
+                            <ion-icon name="information-circle-outline" class="text-2xl text-indigo-400"></ion-icon>
+                            <h3 class="text-xl font-bold">À propos de l'ENIAD</h3>
+                        </div>
+                        <div class="space-y-4 text-gray-300 leading-relaxed text-lg">
+                            <p>
+                                Université Mohammed Iᵉʳ constitue un ensemble d'établissements de la région de
+                                l'Oriental, au Maroc, dont la majorité se trouve à Oujda.
+                            </p>
+                            <div class="flex items-center gap-3 mt-4 pt-4 border-t border-white/5">
+                                <span
+                                    class="bg-indigo-500/20 text-indigo-300 px-3 py-1 rounded text-sm font-mono">Création
+                                    : 1978</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Contact -->
+                    <div class="glass p-8 rounded-3xl space-y-6 h-full">
+                        <div class="flex items-center gap-3 mb-2">
+                            <ion-icon name="call-outline" class="text-2xl text-purple-400"></ion-icon>
+                            <h3 class="text-xl font-bold">Contact</h3>
+                        </div>
+                        <ul class="space-y-4">
+                            <li class="flex items-center gap-4 group">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-purple-500/20 group-hover:text-purple-400 transition-colors">
+                                    <ion-icon name="call"></ion-icon>
+                                </div>
+                                <span class="text-gray-300 font-mono">+212 536</span>
+                            </li>
+                            <li class="flex items-center gap-4 group">
+                                <div
+                                    class="w-10 h-10 rounded-lg bg-gray-800 flex items-center justify-center text-gray-400 group-hover:bg-purple-500/20 group-hover:text-purple-400 transition-colors">
+                                    <ion-icon name="mail"></ion-icon>
+                                </div>
+                                <span class="text-gray-300 font-mono">eniad@ump.ac.ma</span>
+                            </li>
                         </ul>
                     </div>
-                    <div class="flex-1 text-center md:text-right">
-                        <p class="text-sm text-gray-500 mb-4">Developed by</p>
-                        <h4 class="text-xl font-bold">N48I1</h4>
-                        <p class="text-indigo-400">Blockchain Engineering Student</p>
+                </div>
+
+                <div class="w-full h-px bg-gradient-to-r from-transparent via-gray-700 to-transparent my-8"></div>
+
+                <!-- Digital Certification System Section -->
+                <div class="space-y-8">
+                    <div class="text-center">
+                        <h3 class="text-2xl font-bold mb-2">Digital Certification Initiative</h3>
+                        <p class="text-gray-400">ENIAD leverages blockchain technology to secure academic credentials.
+                        </p>
+                    </div>
+
+                    <div class="grid md:grid-cols-3 gap-6">
+                        <div class="bg-gray-800/40 p-6 rounded-2xl flex items-start gap-4 ring-1 ring-white/5">
+                            <div
+                                class="mt-1 w-10 h-10 rounded-lg bg-indigo-500/20 flex items-center justify-center flex-shrink-0 text-indigo-400">
+                                <ion-icon name="finger-print"></ion-icon>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-1">Immutable Record</h4>
+                                <p class="text-sm text-gray-400">Certificates are stored on zkSync, creating a
+                                    permanent, tamper-proof history.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-800/40 p-6 rounded-2xl flex items-start gap-4 ring-1 ring-white/5">
+                            <div
+                                class="mt-1 w-10 h-10 rounded-lg bg-purple-500/20 flex items-center justify-center flex-shrink-0 text-purple-400">
+                                <ion-icon name="globe"></ion-icon>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-1">Global Verification</h4>
+                                <p class="text-sm text-gray-400">Instantly verifiable by employers and institutions
+                                    worldwide via QR code or hash.</p>
+                            </div>
+                        </div>
+
+                        <div class="bg-gray-800/40 p-6 rounded-2xl flex items-start gap-4 ring-1 ring-white/5">
+                            <div
+                                class="mt-1 w-10 h-10 rounded-lg bg-green-500/20 flex items-center justify-center flex-shrink-0 text-green-400">
+                                <ion-icon name="shield-checkmark"></ion-icon>
+                            </div>
+                            <div>
+                                <h4 class="font-bold text-white mb-1">Fraud Proof</h4>
+                                <p class="text-sm text-gray-400">Cryptographic signatures ensure that only authorized
+                                    university admins can issue degrees.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Technical Footer -->
+                <div
+                    class="glass p-8 rounded-3xl flex flex-col md:flex-row items-center justify-between gap-8 mt-12 bg-gray-800/60">
+                    <div class="space-y-4">
+                        <h3 class="text-lg font-bold text-white border-l-4 border-indigo-500 pl-3">Built with Modern
+                            Tech</h3>
+                        <div class="flex flex-wrap gap-3">
+                            <span
+                                class="px-3 py-1 rounded-full bg-gray-700 text-xs font-mono text-indigo-300">Solidity</span>
+                            <span class="px-3 py-1 rounded-full bg-gray-700 text-xs font-mono text-indigo-300">zkSync
+                                Era</span>
+                            <span
+                                class="px-3 py-1 rounded-full bg-gray-700 text-xs font-mono text-indigo-300">Ethers.js</span>
+                            <span
+                                class="px-3 py-1 rounded-full bg-gray-700 text-xs font-mono text-indigo-300">IPFS</span>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-4 text-right">
+                        <div>
+                            <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Developed by</p>
+                            <h4 class="text-sm font-bold text-white">EL HILALI NABIL & ILYAS MAJDOUBI</h4>
+                            <p class="text-xs text-indigo-400">Blockchain Engineering Students</p>
+                        </div>
+                        <div
+                            class="w-12 h-12 rounded-full bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center text-white font-bold text-lg shadow-lg">
+                            <ion-icon name="code-slash-outline"></ion-icon>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1144,9 +1278,8 @@
                             <span class="text-xs text-gray-500">A4 Landscape (3508×2480 px)</span>
                         </div>
 
-                        <!-- A4 Preview Container with Scroll -->
-                        <div class="rounded-2xl overflow-hidden border border-gray-700 bg-gray-900/30"
-                            style="max-height: 75vh; overflow-y: auto;">
+                        <!-- A4 Preview Container - Fixed A4 Landscape, No Scroll -->
+                        <div class="rounded-2xl border border-gray-700 bg-gray-900/30" style="overflow: hidden;">
 
                             <!-- Placeholder -->
                             <div id="diplomaPlaceholder"
@@ -1158,133 +1291,157 @@
                                     format</p>
                             </div>
 
-                            <!-- Actual A4 Landscape Certificate Preview -->
-                            <div id="diplomaPreview" class="hidden p-4">
-                                <div id="issuedDiploma" class="mx-auto shadow-2xl"
-                                    style="width: 100%; max-width: 800px; aspect-ratio: 3508/2480; background: linear-gradient(145deg, #fffef7 0%, #faf6e8 100%); border: 6px solid #c9a227; outline: 3px solid #1e3a5f; outline-offset: 6px; padding: 30px 50px; display: flex; flex-direction: column; justify-content: space-between;">
+                            <!-- Actual A4 Landscape Certificate Preview - Auto-sized like home page -->
+                            <div id="diplomaPreview" class="hidden flex items-center justify-center"
+                                style="padding: 20px;">
+                                <div id="issuedDiploma" class="mx-auto shadow-2xl relative"
+                                    style="width: 700px; background: linear-gradient(145deg, #fffef7 0%, #faf6e8 100%); border: 5px solid #c9a227; outline: 2px solid #1e3a5f; outline-offset: 5px; padding: 20px 32px; display: flex; flex-direction: column; box-sizing: border-box;">
+
+                                    <!-- Decorative Corner Elements -->
+                                    <div class="absolute top-4 left-4 w-16 h-16 border-l-3 border-t-3"
+                                        style="border-color: #c9a227; border-width: 3px 0 0 3px;"></div>
+                                    <div class="absolute top-4 right-4 w-16 h-16 border-r-3 border-t-3"
+                                        style="border-color: #c9a227; border-width: 3px 3px 0 0;"></div>
+                                    <div class="absolute bottom-4 left-4 w-16 h-16 border-l-3 border-b-3"
+                                        style="border-color: #c9a227; border-width: 0 0 3px 3px;"></div>
+                                    <div class="absolute bottom-4 right-4 w-16 h-16 border-r-3 border-b-3"
+                                        style="border-color: #c9a227; border-width: 0 3px 3px 0;"></div>
 
                                     <!-- Certificate Header -->
                                     <div class="flex items-center justify-between">
-                                        <!-- Left: Logo -->
+                                        <!-- Left: ENIAD Logo -->
                                         <div class="flex-shrink-0">
-                                            <svg width="60" height="60" viewBox="0 0 24 24" fill="none">
-                                                <circle cx="12" cy="8" r="6" stroke="#c9a227" stroke-width="2"
-                                                    fill="#ffd700" />
-                                                <path d="M8 14L6 22L12 18L18 22L16 14" stroke="#c9a227" stroke-width="2"
-                                                    fill="#c9a227" />
-                                            </svg>
+                                            <img src="eniad-logo.png" alt="ENIAD" class="w-20 h-20 object-contain" />
                                         </div>
 
                                         <!-- Center: Title -->
                                         <div class="text-center flex-1 px-4">
-                                            <h1 class="text-3xl font-serif font-bold tracking-widest"
-                                                style="color: #1e3a5f;">ENIAD</h1>
-                                            <p class="text-xs font-semibold tracking-[0.15em] uppercase italic"
-                                                style="color: #c9a227;">
-                                                National School of Artificial Intelligence and Digitale
+                                            <p class="text-sm uppercase tracking-[0.25em] mb-1" style="color: #8b4513;">
+                                                École Nationale de l'Intelligence Artificielle et du Digital
                                             </p>
+                                            <h1 class="text-2xl font-bold uppercase tracking-widest"
+                                                style="color: #1e3a5f; font-family: Georgia, serif;">
+                                                Certificate of Achievement
+                                            </h1>
                                         </div>
 
                                         <!-- Right: Degree Type Badge -->
-                                        <div class="flex-shrink-0 text-center px-4 py-2 rounded-lg"
-                                            style="background: linear-gradient(135deg, #c9a227, #b8962b); color: #1e3a5f;">
+                                        <div class="flex-shrink-0 text-center px-5 py-2 rounded-full"
+                                            style="background: linear-gradient(135deg, #c9a227, #ffd700); color: #1e3a5f; box-shadow: 0 4px 6px rgba(201,162,39,0.3);">
                                             <span id="previewDegreeType"
                                                 class="text-sm font-bold uppercase tracking-wide">Diploma</span>
                                         </div>
                                     </div>
 
-                                    <!-- Divider -->
-                                    <div class="w-full h-0.5 my-3"
-                                        style="background: linear-gradient(90deg, #c9a227, #ffd700, #c9a227);"></div>
+                                    <!-- Elegant Divider -->
+                                    <div class="flex items-center gap-4 my-4">
+                                        <div class="flex-1 h-0.5"
+                                            style="background: linear-gradient(90deg, transparent, #c9a227);"></div>
+                                        <div class="w-3 h-3 rotate-45" style="background: #c9a227;"></div>
+                                        <div class="flex-1 h-0.5"
+                                            style="background: linear-gradient(90deg, #c9a227, transparent);"></div>
+                                    </div>
 
                                     <!-- Certificate Body - Horizontal Layout -->
                                     <div class="flex-1 flex items-center">
                                         <!-- Left Side: Main Content -->
                                         <div class="flex-1 text-center py-4">
-                                            <p class="text-base" style="color: #1e3a5f;">This certifies that</p>
-                                            <h2 id="previewName"
-                                                class="text-2xl font-serif italic font-bold py-2 px-6 my-2 inline-block"
-                                                style="color: #1e3a5f; border-bottom: 3px solid #c9a227; min-width: 250px;">
+                                            <p class="text-lg italic" style="color: #666;">This is to certify that</p>
+
+                                            <!-- Student Name with Playfair Display -->
+                                            <h2 id="previewName" class="text-4xl py-3 px-6 my-3 inline-block"
+                                                style="color: #1e3a5f; font-family: 'Playfair Display', Georgia, serif; font-weight: 600; font-style: italic; border-bottom: 3px solid #c9a227; min-width: 300px;">
                                                 _____________________
                                             </h2>
-                                            <p class="text-sm mt-2" style="color: #1e3a5f;">has successfully completed
-                                                the requirements for the major in</p>
-                                            <h3 id="previewMajor" class="text-xl font-bold mt-2"
-                                                style="color: #1e3a5f;">_______</h3>
+
+                                            <p class="text-base mt-3" style="color: #666;">has successfully completed
+                                                the requirements for the degree of</p>
+
+                                            <h3 id="previewMajor" class="text-xl font-bold mt-3"
+                                                style="color: #8b4513; font-family: Georgia, serif;">
+                                                _______
+                                            </h3>
 
                                             <!-- Year & ID Row -->
-                                            <div class="flex justify-center gap-8 mt-4 text-sm" style="color: #c9a227;">
-                                                <span><strong style="color: #1e3a5f;">Year:</strong> <span
-                                                        id="previewYear">____</span></span>
-                                                <span><strong style="color: #1e3a5f;">ID:</strong> <span
-                                                        id="previewIds">______ / ______</span></span>
+                                            <div class="flex justify-center gap-10 mt-5 text-base">
+                                                <span style="color: #666;">
+                                                    <span style="color: #c9a227;">⬥</span> Year: <strong
+                                                        id="previewYear" style="color: #1e3a5f;">____</strong>
+                                                </span>
+                                                <span style="color: #666;">
+                                                    <span style="color: #c9a227;">⬥</span> ID: <strong id="previewIds"
+                                                        style="color: #1e3a5f;">______ / ______</strong>
+                                                </span>
                                             </div>
                                         </div>
 
                                         <!-- Right Side: QR Code -->
-                                        <div class="flex-shrink-0 pl-6">
+                                        <div class="flex-shrink-0 pl-6 flex flex-col items-center">
                                             <div id="previewQRCode"
-                                                class="w-28 h-28 bg-white rounded-lg border-2 flex items-center justify-center"
-                                                style="border-color: #c9a227;">
-                                                <ion-icon name="qr-code" class="text-5xl"
+                                                class="w-32 h-32 bg-white rounded-lg border-3 flex items-center justify-center shadow-lg"
+                                                style="border: 3px solid #c9a227;">
+                                                <ion-icon name="qr-code" class="text-6xl"
                                                     style="color: #1e3a5f;"></ion-icon>
                                             </div>
+                                            <p class="text-xs mt-2 uppercase tracking-wider" style="color: #c9a227;">
+                                                Scan to Verify</p>
                                         </div>
                                     </div>
 
-                                    <!-- Footer: Signatures & Hash -->
-                                    <div class="border-t-2 pt-4" style="border-color: #c9a227;">
-                                        <div class="flex justify-between items-end">
-                                            <!-- Issuer Signature -->
-                                            <div class="text-center">
-                                                <div class="h-10 flex items-end justify-center"
-                                                    style="font-family: 'Brush Script MT', cursive; font-size: 24px; color: #1e3a5f;">
-                                                    M. Ilyas
-                                                </div>
-                                                <div class="border-t-2 w-36 text-xs uppercase pt-1"
-                                                    style="border-color: #1e3a5f; color: #c9a227;">
-                                                    <strong id="previewIssuer" style="color: #1e3a5f;">MAJDOUBI
-                                                        ILYAS</strong><br />Issuer
-                                                </div>
+                                    <!-- Signatures Row -->
+                                    <div class="flex justify-between items-end px-8 mt-4">
+                                        <!-- Issuer Signature -->
+                                        <div class="text-center">
+                                            <div class="h-12 flex items-end justify-center"
+                                                style="font-family: 'Brush Script MT', cursive; font-size: 28px; color: #1e3a5f;">
+                                                M. Ilyas
                                             </div>
-
-                                            <!-- Hash -->
-                                            <div class="text-center px-4 py-2 rounded flex-1 mx-8"
-                                                style="background: rgba(201, 162, 39, 0.15); border: 1px solid #c9a227;">
-                                                <p class="text-xs uppercase tracking-wider mb-1"
-                                                    style="color: #1e3a5f;">Certificate Hash</p>
-                                                <code id="previewHash"
-                                                    class="text-xs break-all cursor-pointer hover:opacity-80"
-                                                    style="color: #c9a227;" onclick="copyHash()" title="Click to copy">
-                                                    0x... (Generated after issuance)
-                                                </code>
+                                            <div class="border-t-2 w-40 text-xs uppercase pt-1"
+                                                style="border-color: #c9a227; color: #666;">
+                                                <strong id="previewIssuer" style="color: #1e3a5f;">MAJDOUBI
+                                                    ILYAS</strong><br />Issuer
                                             </div>
+                                        </div>
 
-                                            <!-- Director Signature -->
-                                            <div class="text-center">
-                                                <div class="h-10 flex items-end justify-center"
-                                                    style="font-family: 'Brush Script MT', cursive; font-size: 24px; color: #1e3a5f;">
-                                                    N. Hilali
-                                                </div>
-                                                <div class="border-t-2 w-36 text-xs uppercase pt-1"
-                                                    style="border-color: #1e3a5f; color: #c9a227;">
-                                                    <strong style="color: #1e3a5f;">EL HILALI NABIL</strong><br />School
-                                                    Director
-                                                </div>
+                                        <!-- Director Signature -->
+                                        <div class="text-center">
+                                            <div class="h-12 flex items-end justify-center"
+                                                style="font-family: 'Brush Script MT', cursive; font-size: 28px; color: #1e3a5f;">
+                                                N. Hilali
+                                            </div>
+                                            <div class="border-t-2 w-40 text-xs uppercase pt-1"
+                                                style="border-color: #c9a227; color: #666;">
+                                                <strong style="color: #1e3a5f;">EL HILALI NABIL</strong><br />Director
                                             </div>
                                         </div>
                                     </div>
+
+                                    <!-- Hash at Bottom - Clean Style -->
+                                    <div class="text-center mt-4 pt-3" style="border-top: 2px dashed #c9a227;">
+                                        <code id="previewHash"
+                                            class="text-sm tracking-wider cursor-pointer hover:opacity-80"
+                                            style="color: #999; font-family: monospace;" onclick="copyHash()"
+                                            title="Click to copy">
+                                            0x... (Generated after issuance)
+                                        </code>
+                                    </div>
                                 </div>
 
-                                <!-- Download Button -->
-                                <div class="flex justify-center mt-6">
-                                    <button onclick="downloadPDF('issuedDiploma')"
-                                        class="px-6 py-3 rounded-xl text-white font-medium flex items-center gap-2 transition-all hover:opacity-90"
-                                        style="background: linear-gradient(135deg, #c9a227, #b8962b);">
-                                        <ion-icon name="download-outline"></ion-icon> Download PDF (A4 Landscape)
-                                    </button>
-                                </div>
                             </div>
+                        </div>
+
+                        <!-- Download Button - Outside container, appears after certificate is shown -->
+                        <!-- Actions Buttons -->
+                        <div id="downloadBtnContainer" class="hidden flex justify-center gap-4 mt-6">
+                            <button onclick="openFullScreenPreview()"
+                                class="px-6 py-3 rounded-xl text-white font-medium flex items-center gap-2 transition-all hover:bg-white/10 border border-white/20">
+                                <ion-icon name="aspect-ratio-outline"></ion-icon> Full Screen Preview
+                            </button>
+                            <button onclick="downloadPDF('issuedDiploma')"
+                                class="px-6 py-3 rounded-xl text-white font-medium flex items-center gap-2 transition-all hover:opacity-90 shadow-lg"
+                                style="background: linear-gradient(135deg, #c9a227, #b8962b);">
+                                <ion-icon name="download-outline"></ion-icon> Download PDF
+                            </button>
                         </div>
                     </div>
                 </div>
@@ -1292,6 +1449,30 @@
         </section>
 
     </main>
+
+    <!-- Full Screen Preview Modal -->
+    <div id="fullScreenModal" class="fixed inset-0 z-[100] bg-gray-900 hidden flex flex-col">
+        <!-- Toolbar -->
+        <div class="flex items-center justify-between px-6 py-4 bg-gray-800 border-b border-gray-700">
+            <h3 class="text-white font-bold">Certificate Preview</h3>
+            <div class="flex items-center gap-4">
+                <button onclick="downloadPDF('fullScreenCertificate')"
+                    class="px-4 py-2 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-sm font-medium flex items-center gap-2">
+                    <ion-icon name="download-outline"></ion-icon> Download PDF
+                </button>
+                <button onclick="closeFullScreenPreview()" class="text-gray-400 hover:text-white text-2xl">
+                    <ion-icon name="close-outline"></ion-icon>
+                </button>
+            </div>
+        </div>
+
+        <!-- Preview Area - Centered and Auto-Sized -->
+        <div class="flex-1 overflow-auto p-8 flex items-center justify-center bg-gray-900">
+            <div id="fullScreenPreviewContainer" class="scale-100 origin-center transition-transform">
+                <!-- Certificate will be cloned here -->
+            </div>
+        </div>
+    </div>
 
     <!-- Certificate Verification Modal -->
     <div id="certificateModal" class="modal-overlay" onclick="closeModalOnOverlay(event)">
